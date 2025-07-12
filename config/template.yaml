@@ -52,16 +52,10 @@
   - name: "qBittorrent All Torrents Summary"
     unique_id: qbittorrent_all_torrents_summary
     icon: mdi:torrent
-    state: >
-      {# Safely get torrent data, defaulting to empty dict if trigger/data is not yet defined #}
+    state: >-
       {% set all_torrents_data = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.torrents is defined else {} %}
-      {# If all_torrents_data is itself not iterable (e.g., None), default to empty dict #}
-      {% if all_torrents_data is none %}
-        {% set all_torrents_data = {} %}
-      {% endif %}
-      {# torrent_data should be all_torrents_data (the dictionary of torrents), not just the first one #}
+      {% if all_torrents_data is none %}{% set all_torrents_data = {} %}{% endif %}
       {% set torrent_data = all_torrents_data %}
-
       {% if torrent_data | length > 0 %}
         {% set downloading_count = torrent_data.values() | selectattr('state', 'eq', 'downloading') | list | count %}
         {% set total_torrents = torrent_data | count %}
@@ -70,17 +64,13 @@
         No torrent data available.
       {% endif %}
     attributes:
-      torrents_display_list: >
+      torrents_display_list: >-
         {% set ns_display = namespace(list=[]) %}
         {% set all_torrents_data = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.torrents is defined else {} %}
-        {% if all_torrents_data is none %}
-          {% set all_torrents_data = {} %}
-        {% endif %}
-        {% set torrent_data = all_torrents_data %} {# Use all torrents for iteration #}
-
+        {% if all_torrents_data is none %}{% set all_torrents_data = {} %}{% endif %}
+        {% set torrent_data = all_torrents_data %}
         {% if torrent_data | length > 0 %}
           {% for name_or_hash, details in torrent_data.items() %}
-            {# Use the 'name' from details if available and valid, fallback to key if it's a hash, otherwise use key directly #}
             {% set display_name = details.name if details.name is defined and details.name | length > 0 else (details.id if name_or_hash | length == 40 and details.id is defined else name_or_hash) %}
             {% set progress_value = details.progress if details.progress is defined else 0 %}
             {% set progress = (progress_value | float(0) * 100) | round(1) %}
@@ -89,12 +79,10 @@
           {% endfor %}
         {% endif %}
         {{ ns_display.list }}
-      torrents_details: |
+      torrents_details: >-
         {% set ns_details = namespace(list=[]) %}
         {% set all_torrents_data = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.torrents is defined else {} %}
-        {% if all_torrents_data is none %}
-          {% set all_torrents_data = {} %}
-        {% endif %}
+        {% if all_torrents_data is none %}{% set all_torrents_data = {} %}{% endif %}
         {% set torrent_data = all_torrents_data %}
 
         {% if torrent_data | length > 0 %}
