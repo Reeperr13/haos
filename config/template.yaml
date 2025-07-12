@@ -80,25 +80,7 @@
         {% endif %}
         {{ ns_display.list }}
       torrents_details: >-
-        {% set ns_details = namespace(list=[]) %}
-        {% set all_torrents_data = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.torrents is defined else {} %}
-        {% if all_torrents_data is none %}{% set all_torrents_data = {} %}{% endif %}
-        {% set torrent_data = all_torrents_data %}
-
-        {% if torrent_data | length > 0 %}
-          {% for name_or_hash, details in torrent_data.items() %}
-            {% set torrent_obj = {
-              'name': (details.name if details.name is defined and details.name | length > 0 else (details.id if name_or_hash | length == 40 and details.id is defined else name_or_hash)),
-              'status': details.state | default('unknown'),
-              'percent_done': (details.progress | float(0) * 100) | round(2) | default(0),
-              'added_date': (details.added_on | int | timestamp_local).strftime('%Y-%m-%d %H:%M:%S') if details.added_on is defined else '',
-              'eta': (details.eta | int | duration_as_string) if details.eta is defined and details.eta != -1 else '',
-              'ratio': details.ratio | float(0)
-            } %}
-            {% set ns_details.list = ns_details.list + [torrent_obj] %}
-          {% endfor %}
-        {% endif %}
-        {{ ns_details.list }}
+        {% set ns_details = namespace(list=[]) %}{% set all_torrents_data = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.torrents is defined else {} %}{% if all_torrents_data is none %}{% set all_torrents_data = {} %}{% endif %}{% set torrent_data = all_torrents_data %}{% if torrent_data | length > 0 %}{% for name_or_hash, details in torrent_data.items() %}{% set torrent_obj = {'name': (details.name if details.name is defined and details.name | length > 0 else (details.id if name_or_hash | length == 40 and details.id is defined else name_or_hash)), 'status': details.state | default('unknown'), 'percent_done': (details.progress | float(0) * 100) | round(2) | default(0), 'added_date': (details.added_on | int | timestamp_local).strftime('%Y-%m-%d %H:%M:%S') if details.added_on is defined else '', 'eta': (details.eta | int | duration_as_string) if details.eta is defined and details.eta != -1 else '', 'ratio': details.ratio | float(0)} %}{% set ns_details.list = ns_details.list + [torrent_obj] %}{% endfor %}{% endif %}{{ ns_details.list }}
 
 # qBittorrent sensors
 - sensor:
