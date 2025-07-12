@@ -220,27 +220,27 @@
   - name: "Radarr Notification Log"
     unique_id: radarr_notification_log
     state: >
-      {% set payload = trigger.event.json_payload %}
-      {% set event_type = payload.eventType | default('Unknown Event') %}
+      {% set payload = trigger.event.data.json_payload if trigger is defined and trigger.event is defined and trigger.event.data is defined else {} %}
+      {% set event_type = payload.eventType | default('Unknown Event') if payload is not none else 'Unknown Event' %}
 
       {# Safely get movie and release details, checking if the parent objects exist #}
-      {% set movie_title = payload.movie.title | default('N/A') if payload.movie is defined and payload.movie is not none else 'N/A' %}
-      {% set release_title = payload.release.releaseTitle | default('N/A') if payload.release is defined and payload.release is not none else 'N/A' %}
-      {% set remote_movie_title = payload.remoteMovie.title | default('N/A') if payload.remoteMovie is defined and payload.remoteMovie is not none else 'N/A' %}
+      {% set movie_title = payload.movie.title | default('N/A') if payload is not none and payload.movie is defined and payload.movie is not none else 'N/A' %}
+      {% set release_title = payload.release.releaseTitle | default('N/A') if payload is not none and payload.release is defined and payload.release is not none else 'N/A' %}
+      {% set remote_movie_title = payload.remoteMovie.title | default('N/A') if payload is not none and payload.remoteMovie is defined and payload.remoteMovie is not none else 'N/A' %}
 
       {# Construct the full desired message #}
-      {% set message = "🍿 Radarr: " ~ event_type %}
+      {% set ns = namespace(message="🍿 Radarr: " ~ event_type) %}
 
       {% if movie_title != 'N/A' %}
-        {% set message = message ~ " 🍿 Movie: " ~ movie_title %}
+        {% set ns.message = ns.message ~ " 🍿 Movie: " ~ movie_title %}
       {% elif remote_movie_title != 'N/A' %}
-        {% set message = message ~ " 🍿 Movie: " ~ remote_movie_title %}
+        {% set ns.message = ns.message ~ " 🍿 Movie: " ~ remote_movie_title %}
       {% endif %}
 
       {% if release_title != 'N/A' %}
-        {% set message = message ~ " Release: " ~ release_title %}
+        {% set ns.message = ns.message ~ " Release: " ~ release_title %}
       {% endif %}
-      {{ message }}
+      {{ ns.message }}
 
 # Overseerr Last Event Sensor
 - trigger:
@@ -511,9 +511,7 @@
       {% if release_title != 'N/A' %}
         {% set final_message = final_message ~ " Release: " ~ release_title %}
       {% endif %}
-      {{ final_message }}
-
-# Master Webhook Log Sensor
+      {{ final_message }}  # Master Webhook Log Sensor
 - trigger:
   - platform: state
     entity_id:
@@ -533,14 +531,17 @@
     attributes:
       log_entries: >
         {% set current_log = state_attr('sensor.combined_webhook_notifications', 'log_entries') | default([]) %}
+        {% if trigger is defined and trigger.entity_id is defined and trigger.to_state is defined %}
+          {% set new_entry_time = now().strftime('%Y-%m-%d %H:%M:%S') %}
+          {% set triggering_entity_id = trigger.entity_id %}
+          {% set source = triggering_entity_id.split('.')[1] | replace('_notification_log', '') | title %}
+          {% set message = trigger.to_state.state if trigger.to_state.state is not none else 'No message' %}
 
-        {% set new_entry_time = now().strftime('%Y-%m-%d %H:%M:%S') %}
-        {% set triggering_entity_id = trigger.entity_id %}
-        {% set source = triggering_entity_id.split('.')[1] | replace('_notification_log', '') | title %}
-        {% set message = trigger.to_state.state %}
-
-        {% set new_log_entry = {'time': new_entry_time, 'source': source, 'message': message} %}
-        {{ ([new_log_entry] + current_log)[:20] }}
+          {% set new_log_entry = {'time': new_entry_time, 'source': source, 'message': message} %}
+          {{ ([new_log_entry] + current_log)[:20] }}
+        {% else %}
+          {{ current_log }}
+        {% endif %}
 
 # Sonoff Power Consumption
 - sensor:
