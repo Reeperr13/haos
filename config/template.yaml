@@ -82,7 +82,8 @@
           {% for name_or_hash, details in torrent_data.items() %}
             {# Use the 'name' from details if available and valid, fallback to key if it's a hash, otherwise use key directly #}
             {% set display_name = details.name if details.name is defined and details.name | length > 0 else (details.id if name_or_hash | length == 40 and details.id is defined else name_or_hash) %}
-            {% set progress = (details.progress | float(0) * 100) | round(1) | default(0) %}
+            {% set progress_value = details.progress if details.progress is defined else 0 %}
+            {% set progress = (progress_value | float(0) * 100) | round(1) %}
             {% set display_string = display_name ~ " " ~ progress ~ " %" %}
             {% set ns_display.list = ns_display.list + [display_string] %}
           {% endfor %}
@@ -116,11 +117,11 @@
     - name: "qBittorrent Active Torrents"
       state: >
         {% set event = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined else {} %}
-        {% if event and event is mapping %}
+        {% if event is not none and event is mapping %}
           {% set active = [] %}
           {% for _, torrent in event.items() %}
-            {% if torrent.state in ['downloading', 'uploading'] %}
-              {% set _ = active.append(torrent.name) %}
+            {% if torrent is not none and torrent.state is defined and torrent.state in ['downloading', 'uploading'] %}
+              {% set _ = active.append(torrent.name | default('Unknown')) %}
             {% endif %}
           {% endfor %}
           {{ active|count }}
@@ -134,10 +135,11 @@
             {% set active = [] %}
             {% for _, torrent in event.items() %}
               {% if torrent.state in ['downloading', 'uploading'] %}
+                {% set progress_value = torrent.progress | default(0) if torrent.progress is defined else 0 %}
                 {% set _ = active.append({
-                  'name': torrent.name,
-                  'progress': torrent.progress | default(0),
-                  'state': torrent.state,
+                  'name': torrent.name | default('Unknown'),
+                  'progress': progress_value,
+                  'state': torrent.state | default('unknown'),
                   'download_speed': torrent.dlspeed | default(0),
                   'upload_speed': torrent.upspeed | default(0)
                 }) %}
@@ -176,24 +178,25 @@
   - name: "Sonarr Notification Log"
     unique_id: sonarr_notification_log
     state: >
-      {% set trigger_json = trigger.event.data.json_payload %}
+      {% set trigger_json = trigger.event.data.json_payload if trigger is defined and trigger.event is defined and trigger.event.data is defined else {} %}
+      {% if trigger_json is none %}{% set trigger_json = {} %}{% endif %}
       {% set event_type = trigger_json.eventType | default('Unknown Event') %}
       {% set series_title = trigger_json.series.title | default('N/A') if trigger_json.series is defined and trigger_json.series is not none else 'N/A' %}
-      {% set episode_title = (trigger_json.episodes[0].title | default('N/A') if trigger_json.episodes | length > 0 else 'N/A') if trigger_json.episodes is defined and trigger_json.episodes is not none else 'N/A' %}
-      {% set season_num = (trigger_json.episodes[0].seasonNumber | default(0) if trigger_json.episodes is defined and trigger_json.episodes is not none and trigger_json.episodes | length > 0 else 0) %}
-      {% set episode_num = (trigger_json.episodes[0].episodeNumber | default(0) if trigger_json.episodes is defined and trigger_json.episodes is not none and trigger_json.episodes | length > 0 else 0) %}
-      {% set final_message = '📺 Sonarr: ' ~ event_type %}
+      {% set episode_title = (trigger_json.episodes[0].title | default('N/A') if trigger_json.episodes is sequence and trigger_json.episodes | length > 0 else 'N/A') if trigger_json.episodes is defined and trigger_json.episodes is not none else 'N/A' %}
+      {% set season_num = (trigger_json.episodes[0].seasonNumber | default(0) if trigger_json.episodes is sequence and trigger_json.episodes | length > 0 else 0) if trigger_json.episodes is defined and trigger_json.episodes is not none else 0 %}
+      {% set episode_num = (trigger_json.episodes[0].episodeNumber | default(0) if trigger_json.episodes is sequence and trigger_json.episodes | length > 0 else 0) if trigger_json.episodes is defined and trigger_json.episodes is not none else 0 %}
+      {% set ns = namespace(message='📺 Sonarr: ' ~ event_type) %}
       {% if series_title != 'N/A' %}
-        {% set final_message = final_message ~ ' 📺 Series: ' ~ series_title %}
+        {% set ns.message = ns.message ~ ' 📺 Series: ' ~ series_title %}
       {% endif %}
       {% if episode_title != 'N/A' %}
-        {% set final_message = final_message ~ ' Episode: S' ~ '%02d' | format(season_num) ~ 'E' ~ '%02d' | format(episode_num) ~ ': ' ~ episode_title %}
+        {% set ns.message = ns.message ~ ' Episode: S' ~ '%02d' | format(season_num) ~ 'E' ~ '%02d' | format(episode_num) ~ ': ' ~ episode_title %}
       {% endif %}
       {% set release_title = trigger_json.release.releaseTitle | default('N/A') if trigger_json.release is defined and trigger_json.release is not none else 'N/A' %}
       {% if release_title != 'N/A' %}
-        {% set final_message = final_message ~ " Release: " ~ release_title %}
+        {% set ns.message = ns.message ~ " Release: " ~ release_title %}
       {% endif %}
-      {{ final_message }}
+      {{ ns.message }}
     attributes:
       timestamp: "{{ now() }}"
 
@@ -262,12 +265,13 @@
   - name: "Overseerr Notification Log"
     unique_id: overseerr_notification_log
     state: >
-      {% set payload = trigger.event.json_payload %}
-      {% set notification_type = payload.notification_type | default('Unknown Event') %}
-      {% set media_title = payload.media.title | default('N/A') if payload.media is defined and payload.media is not none else 'N/A' %}
-      {% set media_type = payload.media.mediaType | default('N/A') if payload.media is defined and payload.media is not none else 'N/A' %}
-      {% set requested_by = payload.request.requestedBy.username | default('N/A') if payload.request is defined and payload.request is not none and payload.request.requestedBy is defined and payload.request.requestedBy is not none else 'N/A' %}
-      {% set message_content = payload.message | default('N/A') if 'message' in payload else 'N/A' %}
+      {% set payload = trigger.event.data.json_payload if trigger is defined and trigger.event is defined and trigger.event.data is defined else {} %}
+      {% if payload is none %}{% set payload = {} %}{% endif %}
+      {% set notification_type = payload.notification_type | default('Unknown Event') if payload is mapping else 'Unknown Event' %}
+      {% set media_title = payload.media.title | default('N/A') if payload is mapping and payload.media is defined and payload.media is mapping else 'N/A' %}
+      {% set media_type = payload.media.mediaType | default('N/A') if payload is mapping and payload.media is defined and payload.media is mapping else 'N/A' %}
+      {% set requested_by = payload.request.requestedBy.username | default('N/A') if payload is mapping and payload.request is defined and payload.request is mapping and payload.request.requestedBy is defined and payload.request.requestedBy is mapping else 'N/A' %}
+      {% set message_content = payload.message | default('N/A') if payload is mapping and 'message' in payload else 'N/A' %}
 
       {% set final_message = "⭐ Overseerr: " ~ notification_type %}
       {% if media_title != 'N/A' %}
@@ -533,12 +537,23 @@
         {% set current_log = state_attr('sensor.combined_webhook_notifications', 'log_entries') | default([]) %}
         {% if trigger is defined and trigger.entity_id is defined and trigger.to_state is defined %}
           {% set new_entry_time = now().strftime('%Y-%m-%d %H:%M:%S') %}
-          {% set triggering_entity_id = trigger.entity_id %}
-          {% set source = triggering_entity_id.split('.')[1] | replace('_notification_log', '') | title %}
-          {% set message = trigger.to_state.state if trigger.to_state.state is not none else 'No message' %}
+          {% set triggering_entity_id = trigger.entity_id | default('unknown') %}
+          {% if triggering_entity_id != 'unknown' and '.' in triggering_entity_id %}
+            {% set source = triggering_entity_id.split('.')[1] | replace('_notification_log', '') | title %}
+          {% else %}
+            {% set source = 'Unknown' %}
+          {% endif %}
+          {% set message = trigger.to_state.state if trigger.to_state is defined and trigger.to_state.state is not none else 'No message' %}
+          {% if message is mapping %}
+            {% set message = message | tojson %}
+          {% endif %}
 
           {% set new_log_entry = {'time': new_entry_time, 'source': source, 'message': message} %}
-          {{ ([new_log_entry] + current_log)[:20] }}
+          {% set updated_log = [new_log_entry] %}
+          {% if current_log is sequence %}
+            {% set updated_log = updated_log + current_log %}
+          {% endif %}
+          {{ updated_log[:20] }}
         {% else %}
           {{ current_log }}
         {% endif %}
