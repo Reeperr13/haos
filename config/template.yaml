@@ -111,6 +111,43 @@
         {% endif %}
         {{ ns_details.list }}
 
+# qBittorrent sensors
+- sensor:
+    - name: "qBittorrent Active Torrents"
+      state: >
+        {% set event = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined else {} %}
+        {% if event and event is mapping %}
+          {% set active = [] %}
+          {% for _, torrent in event.items() %}
+            {% if torrent.state in ['downloading', 'uploading'] %}
+              {% set _ = active.append(torrent.name) %}
+            {% endif %}
+          {% endfor %}
+          {{ active|count }}
+        {% else %}
+          0
+        {% endif %}
+      attributes:
+        torrents: >
+          {% set event = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined else {} %}
+          {% if event and event is mapping %}
+            {% set active = [] %}
+            {% for _, torrent in event.items() %}
+              {% if torrent.state in ['downloading', 'uploading'] %}
+                {% set _ = active.append({
+                  'name': torrent.name,
+                  'progress': torrent.progress | default(0),
+                  'state': torrent.state,
+                  'download_speed': torrent.dlspeed | default(0),
+                  'upload_speed': torrent.upspeed | default(0)
+                }) %}
+              {% endif %}
+            {% endfor %}
+            {{ active }}
+          {% else %}
+            []
+          {% endif %}
+
 # Sonarr Last Event Sensor
 - trigger:
   - platform: event
