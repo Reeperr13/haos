@@ -1,0 +1,55 @@
+# configuration.yaml
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+  extra_module_url:
+    - /local/card-mod.js
+    - /config/www/community/surveillance-card/surveillance-card.js
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+template: !include template.yaml # This is the ONLY place 'template' should be mentioned
+
+recorder:
+  db_url: mysql://homeassistant:reeper13@core-mariadb/homeassistant?charset=utf8mb4
+
+influxdb:
+  host: a0d7b954-influxdb
+  port: 8086
+  database: homeassistant
+  username: reeper
+  password: password:!secret my_ha_password
+  max_retries: 3
+  default_measurement: state
+
+sensor: # This block is correct for your platform-based sensors
+  - platform: openhardwaremonitor
+    host: Petri_Laptop
+  - platform: openhardwaremonitor
+    host: Media_PC
+    # NOTE: Your logs show an error for 'sensor.petri_laptop_wi_fi_load_network_utilization'
+    # having a 'nan' (Not accurate number) value. This is typically an issue with the
+    # data source (Petri_Laptop) or how that specific sensor is reporting.
+    # If this error persists, you might need to disable that specific entity
+    # in Home Assistant's UI (Settings -> Devices & Services -> Entities)
+    # or investigate the OpenHardwareMonitor setup on Petri_Laptop itself.
+
+  - platform: integration
+    source: sensor.sonoff_1000ae8cc9_current
+    name: "Energy Consumption"
+    unit_prefix: k
+    round: 2
+  - platform: time_date
+    display_options:
+      - time
+      - date
+      - date_time
+      - date_time_utc
+      - date_time_iso
+      - time_date
+      - time_utc

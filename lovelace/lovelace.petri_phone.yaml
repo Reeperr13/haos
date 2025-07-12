@@ -1,0 +1,152 @@
+config:
+  views:
+  - cards: []
+    max_columns: 1
+    sections:
+    - cards:
+      - clock_size: medium
+        grid_options:
+          columns: 12
+          rows: 1
+        show_seconds: true
+        time_format: '24'
+        time_zone: Africa/Johannesburg
+        type: clock
+      - card:
+          card_mod:
+            style: "ha-card {\n  background: {% if states('binary_sensor.sonoff_10020b7d53')\
+              \ == 'on' %} #ba0d24 {% endif %}\n}\n"
+          entity: binary_sensor.sonoff_10020b7d53
+          font_size: 20px
+          icon_height: 20px
+          name: Door
+          show_icon: false
+          show_name: true
+          show_state: true
+          type: button
+        conditions:
+        - condition: state
+          entity: binary_sensor.sonoff_10020b7d53
+          state: 'on'
+        type: conditional
+      - entity: weather.forecast_home
+        show_forecast: false
+        type: weather-forecast
+      - entity: light.sonoff_1002311f38
+        grid_options:
+          columns: 3
+          rows: 2
+        name: Bathroom
+        show_icon: true
+        show_name: true
+        type: button
+      - entity: light.sonoff_10023914d9
+        name: Bedlamp
+        show_icon: true
+        show_name: true
+        type: button
+      - entity: light.sonoff_1001e7777d
+        grid_options:
+          columns: 3
+          rows: 2
+        name: Middle Room
+        show_icon: true
+        show_name: true
+        type: button
+      - content: "{%- set stage_sensor = \"sensor.load_shedding_stage_eskom\" -%}\
+          \ {%- set area_sensor = \"sensor.load_shedding_area_tshwane_3_garsfonteinext8\"\
+          \ -%}\n{%- set stage = state_attr(stage_sensor, \"stage\") or 0 -%} {%-\
+          \ set next_stage = state_attr(stage_sensor, \"next_stage\") or 0 -%} {%-\
+          \ set next_start = state_attr(stage_sensor, \"next_start_time\") or 0 -%}\
+          \ {%- set next_end = state_attr(stage_sensor, \"next_end_time\") or 0 -%}\
+          \ {%- set next_in = 0 -%} {%- set next_time = 0 -%} {%- set alert = states(stage_sensor)\
+          \ or 0 -%} {%- set alert_type = \"success\" -%}\n{% set area_forecast =\
+          \ state_attr(area_sensor, \"forecast\") or [] -%} {%- set starts_in = state_attr(area_sensor,\
+          \ \"starts_in\") or 0 -%} {%- set ends_in = state_attr(area_sensor, \"ends_in\"\
+          ) or 0 -%}\n{%- if area_forecast -%}\n  {%- set next_start = area_forecast[0].start_time\
+          \ or 0 -%}\n  {%- set next_end = area_forecast[0].end_time or 0 -%}\n{%-\
+          \ endif -%} {%- if is_state(area_sensor, \"off\") and starts_in and next_start\
+          \ and next_end -%}\n  {%- set next_in = starts_in if starts_in else 0 -%}\n\
+          \  {%- if next_start == 0 or next_end == 0 -%}\n    {%- set next_time =\
+          \ as_timestamp(next_start, default=0.0) -%}\n    {%- set alert = \"Stage\
+          \ {stage}\".format(stage=next_stage) + \" starts in {countdown} ({next})\"\
+          \ -%}\n  {%- elif not stage and starts_in > 1440 -%}\n    {%- set next_time\
+          \ = as_timestamp(next_start, default=0.0) -%}\n    {%- set alert = \"No\
+          \ Load Shedding\" -%}\n  {%- else -%}\n    {%- set next_time = as_timestamp(next_start,\
+          \ default=0.0) -%}\n    {%- set alert = \"Load Shedding starts in {countdown}\
+          \ ({next})\" -%}\n  {%- endif -%}\n  {% if next_in > 1440 %}\n    {%- set\
+          \ alert_type = \"success\" -%}\n  {% elif 1440 >= next_in >= 60 %}\n   \
+          \ {%- set alert_type = \"warning\" -%}\n  {% elif 60 > next_in %}\n    {%-\
+          \ set alert_type = \"error\" -%}\n  {% endif %}\n{%- elif is_state(area_sensor,\
+          \ \"on\") and ends_in -%}\n  {%- set next_time = as_timestamp(next_end,\
+          \ default=0.0) -%}\n  {# {%- set next_in = ends_in if ends_in else 0 -%}\
+          \ #}\n  {%- set alert = \"Load Shedding ends in {countdown} ({next})\" -%}\n\
+          \  {%- set alert_type = \"error\" -%}\n{%- endif -%}\n{% set mins = starts_in\
+          \ %} {% if is_state(area_sensor, \"on\") %}\n  {% set mins = ends_in %}\n\
+          {% endif %} {% set countdown = \"%02dh%02d\"|format(mins // 60, mins % 60)\
+          \ %}\n{%- set alert = alert.format(countdown=countdown, next=next_time |\
+          \ timestamp_custom(\"%H:%M\", True)) -%}\n<ha-alert alert-type=\"{{ alert_type\
+          \ }}\">{{ alert }}</ha-alert>"
+        type: markdown
+      - day_separator_width: 1px
+        days_to_show: 7
+        entities:
+        - entity: calendar.radarr
+          show_time: true
+        - entity: calendar.holidays_in_south_africa
+          show_time: true
+        - entity: calendar.warframe_community_calendar
+        - entity: calendar.load_shedding_forecast
+          label: "\U0001F4C5Load Shedding"
+          show_time: true
+        - entity: calendar.petriest_gmail_com
+          show_location: true
+          show_time: true
+          split_multiday_events: true
+        show_countdown: true
+        show_past_events: true
+        show_progress_bar: true
+        title: Calender
+        today_indicator: glow
+        type: custom:calendar-card-pro
+        weather:
+          date:
+            color: var(--primary-text-color)
+            font_size: 12px
+            icon_size: 14px
+            show_conditions: true
+            show_high_temp: true
+            show_low_temp: true
+          entity: weather.forecast_home
+          event:
+            color: var(--primary-text-color)
+            font_size: 12px
+            icon_size: 14px
+            show_conditions: true
+            show_temp: true
+          position: date
+        week_separator_width: 1px
+      - target:
+          entity_id:
+          - automation.overseer_webhook
+          - automation.prowlarr_webhook
+          - automation.radarr_webhook
+          - automation.sonarr_webhook
+          - automation.tautulli_webhook
+          - automation.webhook_huntarr
+          - automation.webhook_jellyfin
+          - automation.webhook_lidarr
+          - automation.webhook_readarr
+        type: logbook
+      type: grid
+    title: Home
+    type: sections
+  - max_columns: 4
+    path: info
+    sections:
+    - cards:
+      - heading: New section
+        type: heading
+      type: grid
+    title: Info
+    type: sections

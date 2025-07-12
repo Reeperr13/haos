@@ -1,0 +1,605 @@
+- id: '1747511034120'
+  alias: Camera_Lights_On_Bathroom
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.g4_dome_person_detected
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: light.turn_on
+    target:
+      device_id: afe7b360097e72c3cb83b3b04a69054d
+  - delay: 00:02:00
+  - if:
+    - condition: state
+      entity_id: switch.g4_dome_detections_person
+      state: 'on'
+    then:
+    - service: automation.reload
+  - service: light.turn_off
+    target:
+      device_id: afe7b360097e72c3cb83b3b04a69054d
+  - condition: time
+    after: 06:45:00
+    before: 07:10:00
+  - service: light.turn_on
+    target:
+      device_id: afe7b360097e72c3cb83b3b04a69054d
+  - delay: 00:20:00
+  - service: light.turn_off
+    target:
+      device_id: afe7b360097e72c3cb83b3b04a69054d
+  mode: single
+- id: '1747511296816'
+  alias: Door_light
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.sonoff_10020b7d53
+    from: 'off'
+    to: 'on'
+  condition:
+  - condition: or
+    conditions:
+    - condition: sun
+      after: sunset
+    - condition: time
+      after: 06:45:00
+      before: 07:15:00
+  action:
+  - service: light.turn_on
+    target:
+      device_id: 176a3b42d2dbe7e5a55688781117266e
+  - delay: 00:10:00
+  - service: light.turn_off
+    target:
+      device_id: 176a3b42d2dbe7e5a55688781117266e
+  mode: single
+- id: '1747914141761'
+  alias: Door open/Close Mobile Notification
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state_entity:
+      - binary_sensor.sonoff_10020b7d53
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - a41ad4f204e4fd450baf3ae973c5b246
+      start_title: Door Opened
+      start_message: Your Door has been Opened
+      end_trigger_state: 'off'
+      end_trigger_state_entity:
+      - binary_sensor.sonoff_10020b7d53
+      end_notify_device:
+      - a41ad4f204e4fd450baf3ae973c5b246
+      end_title: Door Closed
+      include_end_notify: enable_end_notify_options
+      start_trigger_state: 'on'
+      start_above_state: 1
+      start_notify_data:
+      - sticky
+      end_notify_data:
+      - sticky
+- id: '1747914503697'
+  alias: AI Event Summary (v1.4.3)
+  description: ''
+  use_blueprint:
+    path: valentinfrlch/event_summary.yaml
+    input:
+      camera_entities:
+      - camera.g4_dome_high_resolution_channel
+      remember: true
+      provider: 01JVHE6Z7MC0X0S3K9EMFVBX9A
+      notify_device:
+      - a41ad4f204e4fd450baf3ae973c5b246
+      model: Gemini 1.5 Flash
+- id: '1747914704553'
+  alias: Agent 1
+  description: ''
+  use_blueprint:
+    path: SchBenedikt/agent_1-en.yaml
+    input:
+      notify_time: 07:50:00
+      calendar_entity:
+      - calendar.petriest_gmail_com
+      - calendar.holidays_in_south_africa
+      - calendar.radarr
+      weather_entity: weather.forecast_home
+      zone_entity: zone.petri_flat
+      conversation_agent: conversation.google_generative_ai
+- id: qbittorrent_update_all_torrents
+  alias: qBittorrent Update All Torrents
+  description: Fetches all torrents from qBittorrent and updates a template sensor.
+  trigger:
+  - platform: time_pattern
+    minutes: /1
+  action:
+  - service: qbittorrent.get_all_torrents
+    data:
+      torrent_filter: all
+    response_variable: all
+  - event: qbittorrent_torrent_list_updated
+    event_data:
+      torrents: '{{ all.all_torrents }}'
+    enabled: true
+  mode: single
+- id: '1748539741025'
+  alias: warframe
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.warframe
+    from: streaming
+  condition: []
+  action:
+  - service: script.media_pc_warframe
+    data: {}
+  mode: single
+- id: '1748774304565'
+  alias: Front Door Open Anouncement
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.sonoff_10020b7d53
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: tts.speak
+    data:
+      cache: true
+      media_player_entity_id: media_player.vlc_telnet
+      message: Door opened
+    target:
+      entity_id: tts.google_translate_en_com
+  - service: media_player.volume_set
+    target:
+      device_id: a5d670d6f05f05c3a05e93c077b33910
+    data:
+      volume_level: 0.4
+  mode: single
+- id: '1748787446794'
+  alias: Conversation agent Agenda Notification
+  description: ''
+  use_blueprint:
+    path: homeassistant/conversation_notify_agent_agenda.yaml
+    input:
+      calendar_entity: calendar.petriest_gmail_com
+      weather_entity: weather.home
+      zone_entity: zone.petri_flat
+      conversation_agent: conversation.google_generative_ai
+- id: '1749468728257'
+  alias: Petri-Flat Front Door Closed Light Off
+  description: ''
+  triggers:
+  - type: not_opened
+    device_id: 0da9ae391233ceb7a187008fef5f3ae7
+    entity_id: 7e2debe87ccc93572d8d7b70e4429d17
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+    trigger: device
+  conditions: []
+  actions:
+  - target:
+      device_id: 176a3b42d2dbe7e5a55688781117266e
+    action: light.turn_off
+    data: {}
+  mode: single
+- id: '1749468904489'
+  alias: Turn Bedlamp on with Camera Motion & Manual Override
+  description: Controls bedlamp with camera motion (on while detected, off after 2
+    mins no motion) and manual override (on for 30 mins).
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.g4_dome_person_detected
+    to: 'on'
+    id: motion_on
+  - platform: state
+    entity_id: binary_sensor.g4_dome_person_detected
+    to: 'off'
+    for: 00:02:00
+    id: motion_off
+  - platform: state
+    entity_id: light.bedlamp
+    from: 'off'
+    to: 'on'
+    id: light_turned_on
+  - platform: state
+    entity_id: light.bedlamp
+    from: 'on'
+    to: 'off'
+    id: light_turned_off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: light_turned_on
+      - condition: template
+        value_template: '{{ is_state(''binary_sensor.g4_dome_person_detected'', ''off'')
+          or is_state(''input_boolean.bedlamp_manual_override'', ''on'') }}'
+      sequence:
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.bedlamp_manual_override
+      - delay: 00:30:00
+      - service: light.turn_off
+        target:
+          device_id: e6bff304db592e24d88f25d5956c7291
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.bedlamp_manual_override
+    - conditions:
+      - condition: trigger
+        id: motion_on
+      - condition: state
+        entity_id: input_boolean.bedlamp_manual_override
+        state: 'off'
+      sequence:
+      - service: light.turn_on
+        target:
+          device_id: e6bff304db592e24d88f25d5956c7291
+    - conditions:
+      - condition: trigger
+        id: motion_off
+      - condition: state
+        entity_id: input_boolean.bedlamp_manual_override
+        state: 'off'
+      sequence:
+      - service: light.turn_off
+        target:
+          device_id: e6bff304db592e24d88f25d5956c7291
+    - conditions:
+      - condition: trigger
+        id: light_turned_off
+      - condition: state
+        entity_id: input_boolean.bedlamp_manual_override
+        state: 'on'
+      sequence:
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.bedlamp_manual_override
+  mode: restart
+- id: '1751620255117'
+  alias: Camera_Lights_On_Bathroom_Revised
+  description: Turn on bathroom light when person detected, turn off after no detection.
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.g4_dome_person_detected
+    to: 'on'
+  - platform: state
+    entity_id: binary_sensor.g4_dome_person_detected
+    to: 'off'
+    for: 00:05:00
+  condition:
+  - condition: or
+    conditions:
+    - condition: sun
+      after: sunset
+    - condition: time
+      after: 06:45:00
+      before: 07:10:00
+  action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.to_state.state == ''on'' }}'
+      sequence:
+      - service: light.turn_on
+        target:
+          device_id: afe7b360097e72c3cb83b3b04a69054d
+      - service: script.turn_on
+        entity_id: script.keep_bathroom_light_on
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.to_state.state == ''off'' }}'
+      sequence:
+      - service: light.turn_off
+        target:
+          device_id: afe7b360097e72c3cb83b3b04a69054d
+      - service: script.turn_off
+        entity_id: script.keep_bathroom_light_on
+  mode: restart
+- id: '1751625358896'
+  alias: Door_Light_Advanced
+  description: Controls door light based on time of day and manual override.
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.sonoff_10020b7d53
+    to: 'on'
+    id: door_open
+  - platform: state
+    entity_id: binary_sensor.sonoff_10020b7d53
+    to: 'off'
+    for: 00:01:00
+    id: door_closed
+  - platform: state
+    entity_id: binary_sensor.my_light_button_pressed
+    to: 'on'
+    id: button_pressed
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: door_closed
+      sequence:
+      - delay: 00:05:00
+      - service: light.turn_off
+        target:
+          device_id: 176a3b42d2dbe7e5a55688781117266e
+    - conditions:
+      - condition: trigger
+        id: button_pressed
+      - condition: sun
+        after: sunset
+      sequence:
+      - service: light.turn_on
+        target:
+          device_id: 176a3b42d2dbe7e5a55688781117266e
+      - delay: 00:30:00
+      - service: light.turn_off
+        target:
+          device_id: 176a3b42d2dbe7e5a55688781117266e
+    - conditions:
+      - condition: trigger
+        id: door_open
+      - condition: sun
+        after: sunset
+      sequence:
+      - service: light.turn_on
+        target:
+          device_id: 176a3b42d2dbe7e5a55688781117266e
+      - delay: 00:10:00
+      - service: light.turn_off
+        target:
+          device_id: 176a3b42d2dbe7e5a55688781117266e
+    - conditions:
+      - condition: trigger
+        id: door_open
+      - condition: time
+        after: 06:45:00
+        before: 07:10:00
+      sequence:
+      - service: light.turn_on
+        target:
+          device_id: 176a3b42d2dbe7e5a55688781117266e
+      - service: script.turn_on
+        entity_id: script.turn_off_door_light_at_morning_end
+        data:
+          target_time: 07:10:00
+      - delay: 01:00:00
+    - conditions:
+      - condition: trigger
+        id: door_open
+      - condition: not
+        conditions:
+        - condition: sun
+          after: sunset
+      - condition: not
+        conditions:
+        - condition: time
+          after: 06:45:00
+          before: 07:10:00
+      sequence:
+      - service: light.turn_on
+        target:
+          device_id: 176a3b42d2dbe7e5a55688781117266e
+      - delay: 00:05:00
+      - service: light.turn_off
+        target:
+          device_id: 176a3b42d2dbe7e5a55688781117266e
+  mode: restart
+- id: '1751637446129'
+  alias: Webhook Sonarr
+  description: Handles incoming webhooks from Sonarr for all event types and updates
+    sensor.
+  trigger:
+  - platform: webhook
+    webhook_id: sonarr
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  condition: []
+  action:
+  - event: sonarr_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - service: persistent_notification.create
+    data:
+      title: Sonarr Update
+      message: "{% set trigger_json = trigger.json %} {% set event_type = trigger_json.eventType
+        | default('Unknown Event') %} {% set series_title = trigger_json.series.title
+        | default('N/A') if trigger_json.series is defined else 'N/A' %} {% set episode_title
+        = (trigger_json.episodes[0].title | default('N/A') if trigger_json.episodes
+        | length > 0 else 'N/A') if trigger_json.episodes is defined else 'N/A' %}
+        {% set season_num = (trigger_json.episodes[0].seasonNumber | default(0) if
+        trigger_json.episodes is defined else 0) if trigger_json.episodes is defined
+        else 0 %} {% set episode_num = (trigger_json.episodes[0].episodeNumber | default(0)
+        if trigger_json.episodes | length > 0 else 0) if trigger_json.episodes is
+        defined else 0 %} {% set release_title = trigger_json.release.releaseTitle
+        | default('N/A') if trigger_json.release is defined else 'N/A' %} {% set message
+        = trigger_json.message | default('N/A') if trigger_json.message is defined
+        else 'N/A' %} \U0001F37F Sonarr: {{ event_type }} \U0001F37F {% if series_title
+        != 'N/A' %}Series: {{ series_title }}{% endif %} {% if episode_title != 'N/A'
+        %}Episode: S{{ '%02d' | format(season_num) }}E{{ '%02d' | format(episode_num)
+        }}: {{ episode_title }}{% endif %} {% if release_title != 'N/A' %}Release:
+        {{ release_title }}{% endif %} {% if message != 'N/A' %}Details: {{ message
+        }}{% endif %}\n"
+  mode: single
+- id: '1751640110165'
+  alias: webhook radarr
+  description: Handles incoming webhooks from Radarr for all event types
+  triggers:
+  - webhook_id: radarr
+    trigger: webhook
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  conditions: []
+  actions:
+  - event: radarr_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - data:
+      title: Radarr Webhook Received
+      message: 'Radarr webhook triggered: {{ trigger.json.eventType | default(''Unknown
+        Event'') }}'
+    action: persistent_notification.create
+  mode: single
+- id: '1751640318012'
+  alias: webhook prowlarr
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: prowlarr
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  condition: []
+  action:
+  - event: prowlarr_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - service: persistent_notification.create
+    data:
+      title: Prowlarr Webhook Received
+      message: 'Prowlarr webhook triggered: {{ trigger.json.eventType | default(''Unknown
+        Event'') }}'
+  mode: single
+- id: '1751640577501'
+  alias: webhook Tautulli
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: Tautulli
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  condition: []
+  action:
+  - event: tautulli_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - service: persistent_notification.create
+    data:
+      title: Tautulli Webhook Received
+      message: 'Tautulli webhook triggered: {{ trigger.json.event | default(''Unknown
+        Event'') }} by {{ trigger.json.username | default(''Unknown User'') }}'
+  mode: single
+- id: '1751640727612'
+  alias: webhook overseer
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: overseer
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  condition: []
+  action:
+  - event: overseerr_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - service: persistent_notification.create
+    data:
+      title: Overseerr Webhook Received
+      message: 'Overseerr webhook triggered: {{ trigger.json.notification_type | default(''Unknown
+        Event'') }} for {{ trigger.json.media.title | default(''Unknown Media'') }}'
+  mode: single
+- id: '1751640834317'
+  alias: webhook lidarr
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: lidarr
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  condition: []
+  action:
+  - event: lidarr_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - service: persistent_notification.create
+    data:
+      title: Lidarr Webhook Received
+      message: 'Lidarr webhook triggered: {{ trigger.json.eventType | default(''Unknown
+        Event'') }} for {{ trigger.json.artist.artistName | default(''Unknown Artist'')
+        }}'
+  mode: single
+- id: '1751640917212'
+  alias: webhook readarr
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: readarr
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  condition: []
+  action:
+  - event: readarr_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - service: persistent_notification.create
+    data:
+      title: Readarr Webhook Received
+      message: 'Readarr webhook triggered: {{ trigger.json.eventType | default(''Unknown
+        Event'') }} for {{ trigger.json.book.title | default(''Unknown Book'') }}'
+  mode: single
+- id: '1751641065501'
+  alias: webhook huntarr
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: huntarr
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  condition: []
+  action:
+  - event: huntarr_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - service: persistent_notification.create
+    data:
+      title: Huntarr Webhook Received
+      message: 'Huntarr webhook triggered. Payload: {{ trigger.json | tojson }}'
+  mode: single
+- id: '1751641190636'
+  alias: webhook jellyfin
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: jellyfin
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+  condition: []
+  action:
+  - event: jellyfin_webhook_received
+    event_data:
+      json_payload: '{{ trigger.json }}'
+  - service: persistent_notification.create
+    data:
+      title: Jellyfin Webhook Received
+      message: 'Jellyfin webhook triggered: {{ trigger.json.EventName | default(''Unknown
+        Event'') }}'
+  mode: single

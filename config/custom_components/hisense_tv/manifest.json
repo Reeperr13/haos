@@ -1,0 +1,11 @@
+{
+  "domain": "hisense_tv",
+  "name": "Hisense TV",
+  "version": "1.3.6",
+  "documentation": "https://www.home-assistant.io/integrations/hisense_tv",
+  "dependencies": ["mqtt"],
+  "codeowners": ["@nikagl"],
+  "requirements": [],
+  "zeroconf": ["_hisense-tv._tcp.local."],
+  "config_flow": true
+}

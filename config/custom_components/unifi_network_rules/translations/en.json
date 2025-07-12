@@ -1,0 +1,135 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "UniFi Network Rules",
+        "description": "Set up UniFi Network Rules to manage your UniFi Dream Machine.",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password",
+          "site": "Site name (defaults to 'default')",
+          "update_interval": "Update interval (minutes)",
+          "verify_ssl": "Verify SSL certificate (disable for self-signed certificates)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "no_capabilities": "No supported firewall capabilities detected on this device.",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Device is already configured"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "rule_enabled": "Rule enabled",
+      "rule_disabled": "Rule disabled",
+      "rule_changed": "Rule changed",
+      "rule_deleted": "Rule deleted"
+    },
+    "trigger_subtype": {
+      "firewall_policies": "Firewall Policy",
+      "traffic_routes": "Traffic Route",
+      "port_forwards": "Port Forward",
+      "qos_rules": "QoS Rule",
+      "vpn_clients": "VPN Client",
+      "vpn_servers": "VPN Server",
+      "legacy_firewall_rules": "Legacy Firewall Rule",
+      "traffic_rules": "Traffic Rule",
+      "wlans": "WLAN"
+    }
+  },
+  "triggers": {
+    "rule_enabled": {
+      "name": "UniFi rule enabled",
+      "description": "Triggered when a UniFi Network rule is enabled",
+      "description_configured": "UniFi rule enabled"
+    },
+    "rule_disabled": {
+      "name": "UniFi rule disabled",
+      "description": "Triggered when a UniFi Network rule is disabled",
+      "description_configured": "UniFi rule disabled"
+    },
+    "rule_changed": {
+      "name": "UniFi rule changed",
+      "description": "Triggered when a UniFi Network rule configuration is modified",
+      "description_configured": "UniFi rule changed"
+    },
+    "rule_deleted": {
+      "name": "UniFi rule deleted",
+      "description": "Triggered when a UniFi Network rule is deleted",
+      "description_configured": "UniFi rule deleted"
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Refresh",
+      "description": "Refresh UniFi Network Rules data"
+    },
+    "backup_rules": {
+      "name": "Backup Rules",
+      "description": "Backup firewall and traffic rules to a file",
+      "fields": {
+        "filename": {
+          "name": "Filename",
+          "description": "Name of the backup file (will be stored in Home Assistant's config directory)"
+        }
+      }
+    },
+    "restore_rules": {
+      "name": "Restore Rules",
+      "description": "Restore firewall and traffic rules from a backup file",
+      "fields": {
+        "filename": {
+          "name": "Filename",
+          "description": "Name of the backup file to restore from (must exist in Home Assistant's config directory)"
+        },
+        "rule_ids": {
+          "name": "Rule IDs",
+          "description": "Optional list of specific rule IDs to restore"
+        },
+        "name_filter": {
+          "name": "Name Filter",
+          "description": "Optional filter - only restore rules containing this text in their name"
+        },
+        "rule_types": {
+          "name": "Rule Types",
+          "description": "Optional list of rule types to restore (policy, route, firewall, traffic, port_forward)"
+        }
+      }
+    },
+    "bulk_update_rules": {
+      "name": "Bulk Update Rules",
+      "description": "Enable or disable multiple rules based on name matching",
+      "fields": {
+        "name_filter": {
+          "name": "Name Filter",
+          "description": "Text to match against rule names"
+        },
+        "state": {
+          "name": "State",
+          "description": "True to enable matched rules, False to disable them"
+        }
+      }
+    },
+    "delete_rule": {
+      "name": "Delete Rule",
+      "description": "Delete a rule",
+      "fields": {
+        "rule_id": {
+          "name": "Rule ID",
+          "description": "The ID of the rule to delete"
+        },
+        "rule_type": {
+          "name": "Rule Type",
+          "description": "The type of rule to delete. Currently only supports 'policy' for firewall policies"
+        }
+      }
+    }
+  },
+  "title": "UniFi Network Rules"
+}

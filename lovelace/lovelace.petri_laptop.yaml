@@ -1,0 +1,276 @@
+config:
+  views:
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/340f804101cde00366edb05940167125/original
+      opacity: 33
+      repeat: repeat
+      size: cover
+    cards: []
+    sections:
+    - cards:
+      - heading_style: title
+        type: heading
+      - show_seconds: true
+        time_format: '24'
+        time_zone: Africa/Johannesburg
+        type: custom:digital-clock
+      - content: "**Status**: {{ states('sensor.qbittorrent_all_torrents_summary')\
+          \ }}\n**Download Speed**: {{ states('sensor.qbittorrent_download_speed')\
+          \ | float(0) | round(2) }} MiB/s\n---------------------------------------------------------\n\
+          {% set all_torrents_processed = state_attr('sensor.qbittorrent_all_torrents_summary',\
+          \ 'torrents_details') %}\n{% if all_torrents_processed is none or all_torrents_processed\
+          \ | length == 0 %}\n  **No torrents currently available or loading.**\n\
+          {% else %}\n  {% for torrent in all_torrents_processed %}\n    Torrent:\
+          \ {{ torrent.name | default('N/A') }}\n    Added: {{ torrent.added_date\
+          \ | default('N/A') }}\n    Status: {{ torrent.status | default('unknown')\
+          \ }}\n    Progress: {{ (torrent.percent_done | float(0) / 100) | round(2)\
+          \ }}%\n    Ratio: {{ (torrent.ratio | float(0) * 100) | int / 100 }}\n \
+          \   ETA: {{ torrent.eta | default('N/A') }}\n    ---------------------------------------------------------\n\
+          \  {% endfor %}\n{% endif %}"
+        type: markdown
+      - heading: SpeedTest
+        heading_style: title
+        type: heading
+      - entity: sensor.speedtest_download
+        grid_options:
+          columns: 5
+          rows: auto
+        max: 100
+        name: Download
+        needle: true
+        severity:
+          green: 80
+          red: 20
+          yellow: 50
+        theme: Mushroom
+        type: gauge
+      - entity: sensor.speedtest_upload
+        grid_options:
+          columns: 5
+          rows: auto
+        max: 50
+        name: Upload
+        needle: true
+        severity:
+          green: 40
+          red: 5
+          yellow: 30
+        type: gauge
+      - entity: sensor.speedtest_ping
+        grid_options:
+          columns: 5
+          rows: auto
+        max: 50
+        min: 1
+        name: Ping
+        needle: true
+        severity:
+          green: 20
+          red: 40
+          yellow: 30
+        type: gauge
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - entities:
+        - entity: sensor.petri_laptop_petri_laptop_activewindow
+        - entity: sensor.petri_laptop_petri_laptop_audio_audio_sessions
+        - entity: sensor.petri_laptop_petri_laptop_audio_default_device
+        - entity: sensor.petri_laptop_petri_laptop_audio_default_device_muted
+        - entity: sensor.petri_laptop_petri_laptop_audio_default_device_state
+        - entity: sensor.petri_laptop_petri_laptop_audio_default_device_volume
+        - entity: sensor.petri_laptop_petri_laptop_audio_default_input_device
+        - entity: sensor.petri_laptop_petri_laptop_audio_default_input_device_muted
+        - entity: sensor.petri_laptop_petri_laptop_audio_default_input_device_state
+        - entity: sensor.petri_laptop_petri_laptop_audio_default_input_device_volume
+        - entity: sensor.petri_laptop_petri_laptop_audio_peak_volume
+        - entity: sensor.petri_laptop_petri_laptop_battery_charge_remaining
+        - entity: sensor.petri_laptop_petri_laptop_battery_charge_remaining_percentage
+        - entity: sensor.petri_laptop_petri_laptop_battery_charge_status
+        - entity: sensor.petri_laptop_petri_laptop_battery_full_charge_lifetime
+        - entity: sensor.petri_laptop_petri_laptop_battery_powerline_status
+        - entity: sensor.petri_laptop_petri_laptop_bluetoothdevices
+        - entity: sensor.petri_laptop_petri_laptop_bluetoothledevices
+        - entity: sensor.petri_laptop_petri_laptop_cpuload
+        - entity: sensor.petri_laptop_petri_laptop_currentclockspeed
+        - entity: sensor.petri_laptop_petri_laptop_currentvolume
+        - entity: sensor.petri_laptop_petri_laptop_display_display_count
+        - entity: sensor.petri_laptop_petri_laptop_display_display1
+        - entity: sensor.petri_laptop_petri_laptop_display_display2
+        - entity: sensor.petri_laptop_petri_laptop_display_display5
+        - entity: sensor.petri_laptop_petri_laptop_display_primary_display
+        - entity: sensor.petri_laptop_petri_laptop_geolocation
+        - entity: sensor.petri_laptop_petri_laptop_lastactive
+        - entity: sensor.petri_laptop_petri_laptop_lastboot
+        - entity: sensor.petri_laptop_petri_laptop_lastsystemstatechange
+        - entity: sensor.petri_laptop_petri_laptop_loggeduser
+        - entity: sensor.petri_laptop_petri_laptop_loggedusers
+        - entity: sensor.petri_laptop_petri_laptop_memoryusage
+        - entity: binary_sensor.petri_laptop_petri_laptop_microphoneactive
+        - entity: sensor.petri_laptop_petri_laptop_microphoneprocess
+        - entity: sensor.petri_laptop_petri_laptop_monitorpowerstate
+        - entity: sensor.petri_laptop_petri_laptop_network_bluetooth_network_connection
+        - entity: sensor.petri_laptop_petri_laptop_network_ethernet
+        - entity: sensor.petri_laptop_petri_laptop_network_local_area_connection_1
+        - entity: sensor.petri_laptop_petri_laptop_network_local_area_connection_2
+        - entity: sensor.petri_laptop_petri_laptop_network_loopback_pseudo_interface_1
+        - entity: sensor.petri_laptop_petri_laptop_network_network_card_count
+        - entity: sensor.petri_laptop_petri_laptop_network_vethernet_default_switch
+        - entity: sensor.petri_laptop_petri_laptop_network_vethernet_default_switch_2
+        - entity: sensor.petri_laptop_petri_laptop_network_vethernet_default_switch_3
+        - entity: sensor.petri_laptop_petri_laptop_network_vethernet_default_switch_4
+        - entity: sensor.petri_laptop_petri_laptop_network_vethernet_default_switch_5
+        - entity: sensor.petri_laptop_petri_laptop_network_vethernet_default_switch_6
+        - entity: sensor.petri_laptop_petri_laptop_network_vethernet_default_switch_7
+        - entity: sensor.petri_laptop_petri_laptop_network_vethernet_default_switch_8
+        - entity: sensor.petri_laptop_petri_laptop_network_wi_fi
+        - entity: sensor.petri_laptop_petri_laptop_sessionstate_2
+        - entity: sensor.petri_laptop_petri_laptop_storage_c
+        - entity: sensor.petri_laptop_petri_laptop_storage_total_disk_count
+        - entity: sensor.petri_laptop_petri_laptop_usernotification
+        - entity: binary_sensor.petri_laptop_petri_laptop_webcamactive
+        - entity: sensor.petri_laptop_petri_laptop_webcamprocess
+        - entity: sensor.petri_laptop_petri_laptop_windowsupdates_available_driver_updates
+        - entity: sensor.petri_laptop_petri_laptop_windowsupdates_available_software_updates
+        - entity: sensor.petri_laptop_petri_laptop_windowsupdates_driver_updates_pending
+        - entity: sensor.petri_laptop_petri_laptop_windowsupdates_software_updates_pending
+        - entity: sensor.petri_laptop_petri_laptop_sessionstate
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_audio_audio_sessions
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_audio_default_device
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_gpuload
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_gputemperature
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_lastboot
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_memoryusage
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_bluetooth_network_connection
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_ethernet
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_local_area_connection_1
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_local_area_connection_2
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_loopback_pseudo_interface_1
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_network_card_count
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_vethernet_default_switch
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_vethernet_default_switch_2
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_vethernet_default_switch_3
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_vethernet_default_switch_4
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_vethernet_default_switch_5
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_vethernet_default_switch_6
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_vethernet_default_switch_7
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_vethernet_default_switch_8
+        - entity: sensor.petri_laptop_satellite_petri_laptop_satellite_network_wi_fi
+        type: entities
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - entities:
+        - device_tracker.sm_a256e
+        - sensor.sm_a256e_active_calories_burned
+        - sensor.sm_a256e_active_notification_count
+        - sensor.sm_a256e_app_rx_gb
+        - sensor.sm_a256e_app_tx_gb
+        - sensor.sm_a256e_battery_cycle_count
+        - sensor.sm_a256e_battery_health
+        - sensor.sm_a256e_battery_level
+        - sensor.sm_a256e_battery_power
+        - sensor.sm_a256e_battery_state
+        - sensor.sm_a256e_battery_temperature
+        - sensor.sm_a256e_blood_glucose
+        - sensor.sm_a256e_bluetooth_connection
+        - binary_sensor.sm_a256e_bluetooth_state
+        - sensor.sm_a256e_charger_type
+        - sensor.sm_a256e_daily_distance
+        - sensor.sm_a256e_daily_elevation_gained
+        - sensor.sm_a256e_daily_floors
+        - sensor.sm_a256e_daily_steps
+        - sensor.sm_a256e_data_network_type_sim_1
+        - sensor.sm_a256e_data_network_type_sim_2
+        - sensor.sm_a256e_detected_activity
+        - binary_sensor.sm_a256e_device_locked
+        - sensor.sm_a256e_diastolic_blood_pressure
+        - sensor.sm_a256e_do_not_disturb_sensor
+        - sensor.sm_a256e_geocoded_location
+        - sensor.sm_a256e_heart_rate
+        - binary_sensor.sm_a256e_high_accuracy_mode
+        - sensor.sm_a256e_high_accuracy_update_interval
+        - sensor.sm_a256e_internal_storage
+        - binary_sensor.sm_a256e_is_charging
+        - sensor.sm_a256e_last_notification
+        - binary_sensor.sm_a256e_mobile_data
+        - sensor.sm_a256e_mobile_rx_gb
+        - sensor.sm_a256e_mobile_tx_gb
+        - sensor.sm_a256e_network_type
+        - sensor.sm_a256e_next_alarm
+        - sensor.sm_a256e_phone_state
+        - binary_sensor.sm_a256e_power_save
+        - sensor.sm_a256e_proximity_sensor
+        - sensor.sm_a256e_remaining_charge_time
+        - sensor.sm_a256e_signal_strength_sim_1
+        - sensor.sm_a256e_sim_1
+        - sensor.sm_a256e_sleep_confidence
+        - sensor.sm_a256e_sleep_segment
+        - sensor.sm_a256e_steps_sensor
+        - sensor.sm_a256e_systolic_blood_pressure
+        - sensor.sm_a256e_total_calories_burned
+        - sensor.sm_a256e_total_rx_gb
+        - sensor.sm_a256e_total_tx_gb
+        - sensor.sm_a256e_vo2_max
+        - sensor.sm_a256e_weight
+        - sensor.sm_a256e_wi_fi_bssid
+        - sensor.sm_a256e_wi_fi_connection
+        - sensor.sm_a256e_wi_fi_frequency
+        - sensor.sm_a256e_wi_fi_link_speed
+        - sensor.sm_a256e_wi_fi_signal_strength
+        - binary_sensor.sm_a256e_wi_fi_state
+        - binary_sensor.sm_a256e_work_profile
+        type: entities
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - alert_classes:
+        - door
+        - motion
+        area: petri_room
+        columns: 4
+        cover_classes: []
+        customization_alert: []
+        customization_cover: []
+        customization_domain: []
+        customization_sensor: []
+        mirrored: false
+        popup_domains:
+        - light
+        - switch
+        - media_player
+        - camera
+        - fan
+        - remote
+        - device_tracker
+        - binary_sensor
+        - sensor
+        - script
+        - select
+        - automation
+        - button
+        - number
+        - assist_satellite
+        sensor_classes:
+        - temperature
+        - humidity
+        toggle_domains:
+        - light
+        - switch
+        - fan
+        - media_player
+        type: custom:area-card-plus
+      - content: "{% set log_entries = state_attr('sensor.combined_webhook_notifications',\
+          \ 'log_entries') %}\n{% if log_entries is not none and log_entries | length\
+          \ > 0 %}\n  {% for entry in log_entries %}\n    **{{ entry.time }} ({{ entry.source\
+          \ }}):** {{ entry.message }}<br>\n  {% endfor %}\n{% else %}\n  No webhook\
+          \ events logged yet.\n{% endif %}\n"
+        title: Servarr Logs
+        type: markdown
+      type: grid
+    title: Home

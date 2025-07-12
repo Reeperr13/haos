@@ -1,0 +1,1291 @@
+config:
+  resources:
+  - type: js
+    url: /local/custom_lovelace/html_template_card/html-template-card.js
+  views:
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/17173006970aed4e7aa8e6dca7df21db/original
+      opacity: 70
+      repeat: repeat
+      size: cover
+    badges: []
+    cards: []
+    icon: ''
+    max_columns: 3
+    path: home
+    sections:
+    - cards:
+      - content: "{%- set stage_sensor = \"sensor.load_shedding_stage_eskom\" -%}\
+          \ {%- set area_sensor = \"sensor.load_shedding_area_eskde_7_hartenbosmosselbaywesterncape\"\
+          \ -%}\n{%- set stage = state_attr(stage_sensor, \"stage\") or 0 -%} {%-\
+          \ set next_stage = state_attr(stage_sensor, \"next_stage\") or 0 -%} {%-\
+          \ set next_start = state_attr(stage_sensor, \"next_start_time\") or 0 -%}\
+          \ {%- set next_end = state_attr(stage_sensor, \"next_end_time\") or 0 -%}\
+          \ {%- set next_in = 0 -%} {%- set next_time = 0 -%} {%- set alert = states(stage_sensor)\
+          \ or 0 -%} {%- set alert_type = \"success\" -%}\n{% set area_forecast =\
+          \ state_attr(area_sensor, \"forecast\") or [] -%} {%- set starts_in = state_attr(area_sensor,\
+          \ \"starts_in\") or 0 -%} {%- set ends_in = state_attr(area_sensor, \"ends_in\"\
+          ) or 0 -%}\n{%- if area_forecast -%}\n  {%- set next_start = area_forecast[0].start_time\
+          \ or 0 -%}\n  {%- set next_end = area_forecast[0].end_time or 0 -%}\n{%-\
+          \ endif -%} {%- if is_state(area_sensor, \"off\") and starts_in and next_start\
+          \ and next_end -%}\n  {%- set next_in = starts_in if starts_in else 0 -%}\n\
+          \  {%- if next_start == 0 or next_end == 0 -%}\n    {%- set next_time =\
+          \ as_timestamp(next_start, default=0.0) -%}\n    {%- set alert = \"Stage\
+          \ {stage}\".format(stage=next_stage) + \" starts in {countdown} ({next})\"\
+          \ -%}\n  {%- elif not stage and starts_in > 1440 -%}\n    {%- set next_time\
+          \ = as_timestamp(next_start, default=0.0) -%}\n    {%- set alert = \"No\
+          \ Load Shedding\" -%}\n  {%- else -%}\n    {%- set next_time = as_timestamp(next_start,\
+          \ default=0.0) -%}\n    {%- set alert = \"Load Shedding starts in {countdown}\
+          \ ({next})\" -%}\n  {%- endif -%}\n  {% if next_in > 1440 %}\n    {%- set\
+          \ alert_type = \"success\" -%}\n  {% elif 1440 >= next_in >= 60 %}\n   \
+          \ {%- set alert_type = \"warning\" -%}\n  {% elif 60 > next_in %}\n    {%-\
+          \ set alert_type = \"error\" -%}\n  {% endif %}\n{%- elif is_state(area_sensor,\
+          \ \"on\") and ends_in -%}\n  {%- set next_time = as_timestamp(next_end,\
+          \ default=0.0) -%}\n  {# {%- set next_in = ends_in if ends_in else 0 -%}\
+          \ #}\n  {%- set alert = \"Load Shedding ends in {countdown} ({next})\" -%}\n\
+          \  {%- set alert_type = \"error\" -%}\n{%- endif -%}\n{% set mins = starts_in\
+          \ %} {% if is_state(area_sensor, \"on\") %}\n  {% set mins = ends_in %}\n\
+          {% endif %} {% set countdown = \"%02dh%02d\"|format(mins // 60, mins % 60)\
+          \ %}\n{%- set alert = alert.format(countdown=countdown, next=next_time |\
+          \ timestamp_custom(\"%H:%M\", True)) -%}\n<ha-alert alert-type=\"{{ alert_type\
+          \ }}\">{{ alert }}</ha-alert>"
+        type: markdown
+      - heading: Weather
+        heading_style: title
+        type: heading
+      - Clock: 24
+        entity: weather.forecast_home
+        type: custom:clock-weather-card
+      type: grid
+    - cards:
+      - display_order: alpha_asc
+        entity: todo.shopping_list
+        title: Shopping List
+        type: todo-list
+      type: grid
+    - cards:
+      - heading: Loadshedding
+        heading_style: title
+        type: heading
+      - calShowDescription: false
+        dateFormat: LL
+        disableCalEventLink: true
+        disableCalLink: true
+        disableCalLocationLink: true
+        disableEventLink: true
+        disableLocationLink: true
+        enableModeChange: true
+        entities:
+        - calendar.load_shedding_forecast
+        firstDayOfWeek: 1
+        maxDaysToShow: 7
+        refreshInterval: 1800
+        showAllDayEvents: true
+        showAllDayHours: true
+        showCalendarName: false
+        showCurrentEventLine: false
+        showDate: false
+        showDatePerEvent: false
+        showDeclined: true
+        showDescription: false
+        showEventDate: false
+        showEventIcon: false
+        showFullDayProgress: false
+        showHiddenText: false
+        showLastCalendarWeek: true
+        showLoader: false
+        showLocation: true
+        showMonth: true
+        showMultiDay: false
+        showMultiDayEventParts: false
+        showNoEventsForToday: true
+        showProgressBar: true
+        showRelativeTime: true
+        showTimeRemaining: true
+        showWeekDay: true
+        sortByStartTime: false
+        type: custom:atomic-calendar-revive
+      - card:
+          content: "{% set area_sensor = \"sensor.load_shedding_area_tshwane_3_garsfonteinext8\"\
+            \ %} {% set number_of_days = 2 %} {% set show_day_borders = false %} {%\
+            \ set show_end_times = false %} {% set timeslots = 48 %} <style>\n   \
+            \ @media (prefers-color-scheme: light) {\n        {% if show_day_borders\
+            \ %}\n        .day_container {\n            background-color: #fbeff3\
+            \ !important;\n        }\n        {% endif %}\n\n        .current_time_indicator_text,\n\
+            \        .current_slot_indicator_start_text,\n        .current_slot_indicator_end_text\
+            \ {\n            color: #785551 !important;\n        }\n\n        .current_time_indicator,\n\
+            \        .current_slot_indicator_start,\n        .current_slot_indicator_end\
+            \ {\n            background-color: #785551 !important;\n        }\n\n\
+            \        .slot {\n            background-color: #f5ddd9 !important;\n\
+            \        }\n    }\n\n    .day_container {\n        {% if show_day_borders\
+            \ %}\n        background-color: #2b2120;\n        border-radius: 0.75rem;\n\
+            \        {% endif %}\n        padding-top: 0.5rem;\n        padding-bottom:\
+            \ 1.75rem;\n        margin: 0.25rem 0;\n    }\n\n    h3.day_heading,\n\
+            \    .current_time_indicator_text,\n    .current_slot_indicator_start_text,\n\
+            \    .current_slot_indicator_end_text {\n        font-family: Roboto,\
+            \ Ubuntu, sans-serif;\n        font-weight: 600;\n    }\n\n    h3.day_heading\
+            \ {\n        font-size: 1.0rem;\n        margin: 0 0 0 1rem;\n    }\n\n\
+            \    .slot_container {\n        display: grid;\n        grid-template-columns:\
+            \ repeat({{ timeslots }}, 1fr);\n        gap: 0.0625rem;\n        width:\
+            \ calc(100% - 2rem);\n        margin: 0 1rem;\n        line-height: 0.9375rem;\n\
+            \        position: relative;\n    }\n\n    .slot_container .slot:first-of-type\
+            \ {\n        border-top-left-radius: 50%;\n        border-bottom-left-radius:\
+            \ 50%;\n    }\n\n    .slot_container .slot:last-of-type {\n        border-top-right-radius:\
+            \ 50%;\n        border-bottom-right-radius: 50%;\n    }\n\n    .slot {\n\
+            \        border-radius: 15%;\n        background-color: #534341;\n   \
+            \ }\n\n    .active_slot_stage_1 {\n        background-color: #f6a829 !important;\n\
+            \    }\n\n    .active_slot_stage_2 {\n        background-color: #f8980d\
+            \ !important;\n    }\n\n    .active_slot_stage_3 {\n        background-color:\
+            \ #e66e0e !important;\n    }\n\n    .active_slot_stage_4 {\n        background-color:\
+            \ #e3493f !important;\n    }\n\n    .active_slot_stage_5 {\n        background-color:\
+            \ #d93e3d !important;\n    }\n\n    .active_slot_stage_6 {\n        background-color:\
+            \ #cf3131 !important;\n    }\n\n    .active_slot_stage_7 {\n        background-color:\
+            \ #b21e1d !important;\n    }\n\n    .active_slot_stage_8 {\n        background-color:\
+            \ black !important;\n    }\n\n    div.active_slot {\n        background-color:\
+            \ black;\n    }\n\n    div.fade_slot {\n        opacity:0.2;\n    }\n\n\
+            \    .current_time_indicator {\n        width: 0.125rem;\n        position:\
+            \ absolute;\n        height: 120%;\n        top: -10%;\n        border-radius:\
+            \ 15%;\n        transform: translate(-50%, 0);\n        background-color:\
+            \ #e6bdb7;\n    }\n\n    .current_time_indicator_text {\n        position:\
+            \ absolute;\n        bottom: 140%;\n        transform: translate(-50%,\
+            \ 0);\n        color: #e6bdb7;\n    }\n\n    .current_slot_indicator_start\
+            \ {\n        width: 0.125rem;\n        position: absolute;\n        height:\
+            \ 40%;\n        top: 100%;\n        border-radius: 15%;\n        transform:\
+            \ translate(-50%, 0);\n        background-color: #e6bdb7;\n    }\n\n \
+            \   .current_slot_indicator_start_text {\n        position: absolute;\n\
+            \        top: 150%;\n        transform: translate(-50%, 0);\n        color:\
+            \ #e6bdb7;\n    }\n\n    .current_slot_indicator_end {\n        width:\
+            \ 0.125rem;\n        position: absolute;\n        height: 40%;\n     \
+            \   bottom: 100%;\n        border-radius: 15%;\n        transform: translate(-50%,\
+            \ 0);\n        background-color: #e6bdb7;\n    }\n\n    .current_slot_indicator_end_text\
+            \ {\n        position: absolute;\n        bottom: 150%;\n        transform:\
+            \ translate(-50%, 0);\n        color: #e6bdb7;\n    }\n</style> {% set\
+            \ area_schedule = state_attr(area_sensor, \"forecast\") %} {% if area_schedule\
+            \ is none %}{% set area_schedule = [] %}{% endif %} {% for day_offset_idx\
+            \ in range(number_of_days) %}\n    {% set today_datetime_midnight = now().replace(hour=0,minute=0,second=0,microsecond=0)\
+            \ + timedelta(days=day_offset_idx) %}\n    <div class=\"day_container\"\
+            >\n        <h3 class=\"day_heading\"\n            style=\"{% if day_offset_idx\
+            \ == 0 or show_end_times %} margin-bottom: 1.5rem;\n                {%\
+            \ else %} margin-bottom: 0.5rem;\n                {% endif %}\">{{ today_datetime_midnight.strftime(\"\
+            %A, %B %-d\") }}</h3>\n        <div class=\"slot_container\">\n      \
+            \      {% set ns = namespace(active_class_name=\"\", last_slot_was_active=false,\
+            \ current_slot_was_activated=false) %}\n            {% for half_hour_time_slot_idx\
+            \ in range(timeslots) %}\n                {% set half_hour_time_slot =\
+            \ today_datetime_midnight + timedelta(minutes=30*half_hour_time_slot_idx)\
+            \ %}\n                {% set ns.active_class_name = \"\" %}\n        \
+            \        {% set ns.current_slot_was_activated = false %}\n           \
+            \     {% for loadshedding in area_schedule %}\n                    {%\
+            \ if not ns.current_slot_was_activated %}\n                        {%\
+            \ if loadshedding[\"start_time\"] <= half_hour_time_slot < loadshedding[\"\
+            end_time\"] %}\n                            {% if not ns.last_slot_was_active\
+            \ %}\n                                {% set percentage_of_region = (half_hour_time_slot_idx/timeslots)*100\
+            \ %}\n                                <span class=\"current_slot_indicator_start\"\
+            \ style=\"left:{{ percentage_of_region }}%\">&nbsp;</span>\n         \
+            \                       <span class=\"current_slot_indicator_start_text\"\
+            \ style=\"left:{{ percentage_of_region }}%;\n                        \
+            \                    {% if half_hour_time_slot.hour == 0 %}transform:\
+            \ none;{% elif half_hour_time_slot.hour == 23 %}transform: translate(-100%,0);{%\
+            \ endif %}\">{{ half_hour_time_slot.strftime(\"%H:%M\") }}</span>\n  \
+            \                          {% endif %}\n                            {%\
+            \ set ns.current_slot_was_activated = true %}\n                      \
+            \      {% set ns.last_slot_was_active = true %}\n                    \
+            \        {% set ns.active_class_name = \"active_slot active_slot_\" +\
+            \ loadshedding['stage']|lower|replace(' ','_') %}\n                  \
+            \      {% endif %}\n                    {% endif %}\n                {%\
+            \ endfor %}\n                {% if not ns.current_slot_was_activated %}\n\
+            \                    {% if show_end_times and ns.last_slot_was_active\
+            \ %}\n                        {% set percentage_of_region = (half_hour_time_slot_idx/timeslots)*100\
+            \ %}\n                        <span class=\"current_slot_indicator_end\"\
+            \n                            style=\"left:{{ percentage_of_region }}%\"\
+            >&nbsp;</span>\n                        <span class=\"current_slot_indicator_end_text\"\
+            \n                            style=\"left:{{ percentage_of_region }}%;\n\
+            \                                    {% if half_hour_time_slot.hour ==\
+            \ 0 %}transform: none;{% elif half_hour_time_slot.hour == 23 %}transform:\
+            \ translate(-100%,0);{% endif %}\">{{ half_hour_time_slot.strftime(\"\
+            %H:%M\") }}</span>\n                    {% endif %}\n                \
+            \    {% set ns.last_slot_was_active = false %}\n                {% endif\
+            \ %}\n                <div class=\"slot {% if now() > half_hour_time_slot\
+            \ + timedelta(minutes=30) %}fade_slot{% endif %} {{ ns.active_class_name\
+            \ }}\">&nbsp;</div>\n            {% endfor %}\n            {% if day_offset_idx\
+            \ == 0 %}\n                {% set current_time_indicator_progress = now().hour*2\
+            \ + now().minute/30 %}\n                {% set percentage_of_region =\
+            \ (current_time_indicator_progress/timeslots)*100 %}\n               \
+            \ <span class=\"current_time_indicator\"\n                    style=\"\
+            left:{{ percentage_of_region }}%\">&nbsp;</span>\n                {% if\
+            \ not show_end_times %}\n                  <span class=\"current_time_indicator_text\"\
+            \n                      style=\"left:{{ percentage_of_region }}%\">Now</span>\n\
+            \                {% endif %}\n            {% endif %}\n        </div>\n\
+            \    </div>\n{% endfor %}\n"
+          ignore_line_breaks: true
+          type: custom:html-template-card
+        conditions:
+        - condition: state
+          entity: sensor.load_shedding_area_eskde_7_hartenbosmosselbaywesterncape
+          state: ''
+        type: conditional
+      - card:
+          card_mod:
+            style: "ha-card {\n  background: {% if states('binary_sensor.sonoff_10020b7d53')\
+              \ == 'on' %} #ba0d24 {% endif %}\n}\n"
+          entity: binary_sensor.sonoff_10020b7d53
+          font_size: 60px
+          icon_height: 20px
+          name: Petri Door
+          show_icon: true
+          show_name: true
+          show_state: true
+          type: button
+        conditions: []
+        grid_options:
+          columns: 3
+          rows: auto
+        type: conditional
+      type: grid
+    title: Home
+    type: sections
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/08193b2dfb295d968ef5c5e6385af072/original
+      opacity: 33
+      repeat: repeat
+      size: cover
+    badges: []
+    cards: []
+    dense_section_placement: true
+    header:
+      badges_position: bottom
+      card:
+        content: '## Servarr'
+        text_only: true
+        type: markdown
+      layout: responsive
+    max_columns: 6
+    path: areas-servarr
+    sections:
+    - cards:
+      - heading: Servarr Home Monitor
+        heading_style: subtitle
+        type: heading
+      - card_style: full
+        entity: sensor.rpi_servarr_home_rpi_monitor_servarr
+        temp_scale: C
+        type: custom:rpi-monitor-card
+      - detail: 2
+        entity: sensor.rpi_servarr_home_rpi_cpu_use_servarr
+        graph: line
+        grid_options:
+          columns: 12
+          rows: 2.5
+        limits:
+          max: 100
+          min: 0
+        type: sensor
+      - detail: 2
+        entity: sensor.rpi_servarr_home_rpi_temp_servarr
+        graph: line
+        grid_options:
+          columns: 12
+          rows: 2.5
+        limits:
+          max: 100
+          min: 0
+        type: sensor
+      type: grid
+    - cards:
+      - heading: Qbittorent
+        heading_style: title
+        type: heading
+      - content: "**Status**: {{ states('sensor.qbittorrent_all_torrents_summary')\
+          \ }}\n**Download Speed**: {{ states('sensor.qbittorrent_download_speed')\
+          \ | float(0) | round(2) }} MiB/s\n---------------------------------------------------------\n\
+          {% set all_torrents_processed = state_attr('sensor.qbittorrent_all_torrents_summary',\
+          \ 'torrents_details') %}\n{% if all_torrents_processed is none or all_torrents_processed\
+          \ | length == 0 %}\n  **No torrents currently available or loading.**\n\
+          {% else %}\n  {% for torrent in all_torrents_processed %}\n    Torrent:\
+          \ {{ torrent.name | default('N/A') }}\n    Added: {{ torrent.added_date\
+          \ | default('N/A') }}\n    Status: {{ torrent.status | default('unknown')\
+          \ }}\n    Progress: {{ (torrent.percent_done | float(0) / 100) | round(2)\
+          \ }}%\n    Ratio: {{ (torrent.ratio | float(0) * 100) | int / 100 }}\n \
+          \   ETA: {{ torrent.eta | default('N/A') }}\n    ---------------------------------------------------------\n\
+          \  {% endfor %}\n{% endif %}"
+        type: markdown
+      - entity: sensor.qbittorrent_status
+        type: tile
+      - entity: sensor.qbittorrent_connection_status
+        type: tile
+      - entity: sensor.qbittorrent_inactive_torrents
+        type: tile
+      - entity: sensor.qbittorrent_paused_torrents
+        type: tile
+      - entity: sensor.qbittorrent_active_torrents
+        type: tile
+      - entity: sensor.qbittorrent_all_torrents
+        type: tile
+      - entity: sensor.qbittorrent_all_time_download
+        type: tile
+      - entity: sensor.qbittorrent_all_time_upload
+        type: tile
+      - entity: switch.qbittorrent_alternative_speed
+        type: tile
+      - entity: sensor.qbittorrent_upload_speed
+        type: tile
+      - entity: sensor.qbittorrent_download_speed
+        type: tile
+      - entity: switch.unifi_network_qbittorrent
+        type: tile
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - entity: sensor.portainer_endpoints_local
+        type: tile
+      - entity: sensor.portainer_local_apprise
+        type: tile
+      - entity: sensor.portainer_local_bazarr
+        type: tile
+      - entity: sensor.portainer_local_cleanuperr
+        type: tile
+      - entity: sensor.portainer_local_episeerr
+        type: tile
+      - entity: sensor.portainer_local_flaresolverr
+        type: tile
+      - entity: sensor.portainer_local_homarr
+        type: tile
+      - entity: sensor.portainer_local_huntarr
+        type: tile
+      - entity: sensor.portainer_local_jellyfin
+        type: tile
+      - entity: sensor.portainer_local_jellyseerr
+        type: tile
+      - entity: sensor.portainer_local_kapowarr
+        type: tile
+      - entity: sensor.portainer_local_lidarr
+        type: tile
+      - entity: sensor.portainer_local_portainer
+        type: tile
+      - entity: sensor.portainer_local_prowlarr
+        type: tile
+      - entity: sensor.portainer_local_qbit_manage
+        type: tile
+      - entity: sensor.portainer_local_qbittorrent
+        type: tile
+      - entity: sensor.portainer_local_radarr
+        type: tile
+      - entity: sensor.portainer_local_readarr
+        type: tile
+      - entity: sensor.portainer_local_recyclarr
+        type: tile
+      - entity: sensor.portainer_local_sabnzbd
+        type: tile
+      - entity: sensor.portainer_local_sonarr
+        type: tile
+      - entity: sensor.portainer_local_watchtower
+        type: tile
+      - entity: update.portainer_update
+        type: tile
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      type: grid
+    title: Servarr
+    type: sections
+  - max_columns: 4
+    path: energy
+    sections:
+    - cards:
+      - heading: Load Shedding
+        heading_style: title
+        type: heading
+      - alignment: justify
+        chips:
+        - content: '{{state_attr(entity, "count")}}/{{state_attr(entity, "limit")}}'
+          entity: sensor.load_shedding_sepush_api_quota
+          icon: mdi:api
+          type: template
+        - entity: sensor.load_shedding_stage_eskom
+          type: entity
+        - entity: sensor.load_shedding_area_eskde_7_hartenbosmosselbaywesterncape
+          hold_action:
+            action: more-info
+          type: entity
+        type: custom:mushroom-chips-card
+      - content: "{%- set stage_sensor = \"sensor.load_shedding_stage_eskom\" -%}\
+          \ {%- set area_sensor = \"sensor.load_shedding_area_eskde_7_hartenbosmosselbaywesterncape\"\
+          \ -%}\n{%- set stage = state_attr(stage_sensor, \"stage\") or 0 -%} {%-\
+          \ set next_stage = state_attr(stage_sensor, \"next_stage\") or 0 -%} {%-\
+          \ set next_start = state_attr(stage_sensor, \"next_start_time\") or 0 -%}\
+          \ {%- set next_end = state_attr(stage_sensor, \"next_end_time\") or 0 -%}\
+          \ {%- set next_in = 0 -%} {%- set next_time = 0 -%} {%- set alert = states(stage_sensor)\
+          \ or 0 -%} {%- set alert_type = \"success\" -%}\n{% set area_forecast =\
+          \ state_attr(area_sensor, \"forecast\") or [] -%} {%- set starts_in = state_attr(area_sensor,\
+          \ \"starts_in\") or 0 -%} {%- set ends_in = state_attr(area_sensor, \"ends_in\"\
+          ) or 0 -%}\n{%- if area_forecast -%}\n  {%- set next_start = area_forecast[0].start_time\
+          \ or 0 -%}\n  {%- set next_end = area_forecast[0].end_time or 0 -%}\n{%-\
+          \ endif -%} {%- if is_state(area_sensor, \"off\") and starts_in and next_start\
+          \ and next_end -%}\n  {%- set next_in = starts_in if starts_in else 0 -%}\n\
+          \  {%- if next_start == 0 or next_end == 0 -%}\n    {%- set next_time =\
+          \ as_timestamp(next_start, default=0.0) -%}\n    {%- set alert = \"Stage\
+          \ {stage}\".format(stage=next_stage) + \" starts in {countdown} ({next})\"\
+          \ -%}\n  {%- elif not stage and starts_in > 1440 -%}\n    {%- set next_time\
+          \ = as_timestamp(next_start, default=0.0) -%}\n    {%- set alert = \"No\
+          \ Load Shedding\" -%}\n  {%- else -%}\n    {%- set next_time = as_timestamp(next_start,\
+          \ default=0.0) -%}\n    {%- set alert = \"Load Shedding starts in {countdown}\
+          \ ({next})\" -%}\n  {%- endif -%}\n  {% if next_in > 1440 %}\n    {%- set\
+          \ alert_type = \"success\" -%}\n  {% elif 1440 >= next_in >= 60 %}\n   \
+          \ {%- set alert_type = \"warning\" -%}\n  {% elif 60 > next_in %}\n    {%-\
+          \ set alert_type = \"error\" -%}\n  {% endif %}\n{%- elif is_state(area_sensor,\
+          \ \"on\") and ends_in -%}\n  {%- set next_time = as_timestamp(next_end,\
+          \ default=0.0) -%}\n  {# {%- set next_in = ends_in if ends_in else 0 -%}\
+          \ #}\n  {%- set alert = \"Load Shedding ends in {countdown} ({next})\" -%}\n\
+          \  {%- set alert_type = \"error\" -%}\n{%- endif -%}\n{% set mins = starts_in\
+          \ %} {% if is_state(area_sensor, \"on\") %}\n  {% set mins = ends_in %}\n\
+          {% endif %} {% set countdown = \"%02dh%02d\"|format(mins // 60, mins % 60)\
+          \ %}\n{%- set alert = alert.format(countdown=countdown, next=next_time |\
+          \ timestamp_custom(\"%H:%M\", True)) -%}\n<ha-alert alert-type=\"{{ alert_type\
+          \ }}\">{{ alert }}</ha-alert>"
+        type: markdown
+      - content: "{% set area_sensor = \"sensor.load_shedding_area_eskde_7_hartenbosmosselbaywesterncape\"\
+          \ %} {% set number_of_days = 2 %} {% set show_day_borders = false %} {%\
+          \ set show_end_times = false %} {% set timeslots = 48 %} <style>\n    @media\
+          \ (prefers-color-scheme: light) {\n        {% if show_day_borders %}\n \
+          \       .day_container {\n            background-color: #fbeff3 !important;\n\
+          \        }\n        {% endif %}\n\n        .current_time_indicator_text,\n\
+          \        .current_slot_indicator_start_text,\n        .current_slot_indicator_end_text\
+          \ {\n            color: #785551 !important;\n        }\n\n        .current_time_indicator,\n\
+          \        .current_slot_indicator_start,\n        .current_slot_indicator_end\
+          \ {\n            background-color: #785551 !important;\n        }\n\n  \
+          \      .slot {\n            background-color: #f5ddd9 !important;\n    \
+          \    }\n    }\n\n    .day_container {\n        {% if show_day_borders %}\n\
+          \        background-color: #2b2120;\n        border-radius: 0.75rem;\n \
+          \       {% endif %}\n        padding-top: 0.5rem;\n        padding-bottom:\
+          \ 1.75rem;\n        margin: 0.25rem 0;\n    }\n\n    h3.day_heading,\n \
+          \   .current_time_indicator_text,\n    .current_slot_indicator_start_text,\n\
+          \    .current_slot_indicator_end_text {\n        font-family: Roboto, Ubuntu,\
+          \ sans-serif;\n        font-weight: 600;\n    }\n\n    h3.day_heading {\n\
+          \        font-size: 1.0rem;\n        margin: 0 0 0 1rem;\n    }\n\n    .slot_container\
+          \ {\n        display: grid;\n        grid-template-columns: repeat({{ timeslots\
+          \ }}, 1fr);\n        gap: 0.0625rem;\n        width: calc(100% - 2rem);\n\
+          \        margin: 0 1rem;\n        line-height: 0.9375rem;\n        position:\
+          \ relative;\n    }\n\n    .slot_container .slot:first-of-type {\n      \
+          \  border-top-left-radius: 50%;\n        border-bottom-left-radius: 50%;\n\
+          \    }\n\n    .slot_container .slot:last-of-type {\n        border-top-right-radius:\
+          \ 50%;\n        border-bottom-right-radius: 50%;\n    }\n\n    .slot {\n\
+          \        border-radius: 15%;\n        background-color: #534341;\n    }\n\
+          \n    .active_slot_stage_1 {\n        background-color: #f6a829 !important;\n\
+          \    }\n\n    .active_slot_stage_2 {\n        background-color: #f8980d\
+          \ !important;\n    }\n\n    .active_slot_stage_3 {\n        background-color:\
+          \ #e66e0e !important;\n    }\n\n    .active_slot_stage_4 {\n        background-color:\
+          \ #e3493f !important;\n    }\n\n    .active_slot_stage_5 {\n        background-color:\
+          \ #d93e3d !important;\n    }\n\n    .active_slot_stage_6 {\n        background-color:\
+          \ #cf3131 !important;\n    }\n\n    .active_slot_stage_7 {\n        background-color:\
+          \ #b21e1d !important;\n    }\n\n    .active_slot_stage_8 {\n        background-color:\
+          \ black !important;\n    }\n\n    div.active_slot {\n        background-color:\
+          \ black;\n    }\n\n    div.fade_slot {\n        opacity:0.2;\n    }\n\n\
+          \    .current_time_indicator {\n        width: 0.125rem;\n        position:\
+          \ absolute;\n        height: 120%;\n        top: -10%;\n        border-radius:\
+          \ 15%;\n        transform: translate(-50%, 0);\n        background-color:\
+          \ #e6bdb7;\n    }\n\n    .current_time_indicator_text {\n        position:\
+          \ absolute;\n        bottom: 140%;\n        transform: translate(-50%, 0);\n\
+          \        color: #e6bdb7;\n    }\n\n    .current_slot_indicator_start {\n\
+          \        width: 0.125rem;\n        position: absolute;\n        height:\
+          \ 40%;\n        top: 100%;\n        border-radius: 15%;\n        transform:\
+          \ translate(-50%, 0);\n        background-color: #e6bdb7;\n    }\n\n   \
+          \ .current_slot_indicator_start_text {\n        position: absolute;\n  \
+          \      top: 150%;\n        transform: translate(-50%, 0);\n        color:\
+          \ #e6bdb7;\n    }\n\n    .current_slot_indicator_end {\n        width: 0.125rem;\n\
+          \        position: absolute;\n        height: 40%;\n        bottom: 100%;\n\
+          \        border-radius: 15%;\n        transform: translate(-50%, 0);\n \
+          \       background-color: #e6bdb7;\n    }\n\n    .current_slot_indicator_end_text\
+          \ {\n        position: absolute;\n        bottom: 150%;\n        transform:\
+          \ translate(-50%, 0);\n        color: #e6bdb7;\n    }\n</style> {% set area_schedule\
+          \ = state_attr(area_sensor, \"forecast\") %} {% if area_schedule is none\
+          \ %}{% set area_schedule = [] %}{% endif %} {% for day_offset_idx in range(number_of_days)\
+          \ %}\n    {% set today_datetime_midnight = now().replace(hour=0,minute=0,second=0,microsecond=0)\
+          \ + timedelta(days=day_offset_idx) %}\n    <div class=\"day_container\"\
+          >\n        <h3 class=\"day_heading\"\n            style=\"{% if day_offset_idx\
+          \ == 0 or show_end_times %} margin-bottom: 1.5rem;\n                {% else\
+          \ %} margin-bottom: 0.5rem;\n                {% endif %}\">{{ today_datetime_midnight.strftime(\"\
+          %A, %B %-d\") }}</h3>\n        <div class=\"slot_container\">\n        \
+          \    {% set ns = namespace(active_class_name=\"\", last_slot_was_active=false,\
+          \ current_slot_was_activated=false) %}\n            {% for half_hour_time_slot_idx\
+          \ in range(timeslots) %}\n                {% set half_hour_time_slot = today_datetime_midnight\
+          \ + timedelta(minutes=30*half_hour_time_slot_idx) %}\n                {%\
+          \ set ns.active_class_name = \"\" %}\n                {% set ns.current_slot_was_activated\
+          \ = false %}\n                {% for loadshedding in area_schedule %}\n\
+          \                    {% if not ns.current_slot_was_activated %}\n      \
+          \                  {% if loadshedding[\"start_time\"] <= half_hour_time_slot\
+          \ < loadshedding[\"end_time\"] %}\n                            {% if not\
+          \ ns.last_slot_was_active %}\n                                {% set percentage_of_region\
+          \ = (half_hour_time_slot_idx/timeslots)*100 %}\n                       \
+          \         <span class=\"current_slot_indicator_start\" style=\"left:{{ percentage_of_region\
+          \ }}%\">&nbsp;</span>\n                                <span class=\"current_slot_indicator_start_text\"\
+          \ style=\"left:{{ percentage_of_region }}%;\n                          \
+          \                  {% if half_hour_time_slot.hour == 0 %}transform: none;{%\
+          \ elif half_hour_time_slot.hour == 23 %}transform: translate(-100%,0);{%\
+          \ endif %}\">{{ half_hour_time_slot.strftime(\"%H:%M\") }}</span>\n    \
+          \                        {% endif %}\n                            {% set\
+          \ ns.current_slot_was_activated = true %}\n                            {%\
+          \ set ns.last_slot_was_active = true %}\n                            {%\
+          \ set ns.active_class_name = \"active_slot active_slot_\" + loadshedding['stage']|lower|replace('\
+          \ ','_') %}\n                        {% endif %}\n                    {%\
+          \ endif %}\n                {% endfor %}\n                {% if not ns.current_slot_was_activated\
+          \ %}\n                    {% if show_end_times and ns.last_slot_was_active\
+          \ %}\n                        {% set percentage_of_region = (half_hour_time_slot_idx/timeslots)*100\
+          \ %}\n                        <span class=\"current_slot_indicator_end\"\
+          \n                            style=\"left:{{ percentage_of_region }}%\"\
+          >&nbsp;</span>\n                        <span class=\"current_slot_indicator_end_text\"\
+          \n                            style=\"left:{{ percentage_of_region }}%;\n\
+          \                                    {% if half_hour_time_slot.hour == 0\
+          \ %}transform: none;{% elif half_hour_time_slot.hour == 23 %}transform:\
+          \ translate(-100%,0);{% endif %}\">{{ half_hour_time_slot.strftime(\"%H:%M\"\
+          ) }}</span>\n                    {% endif %}\n                    {% set\
+          \ ns.last_slot_was_active = false %}\n                {% endif %}\n    \
+          \            <div class=\"slot {% if now() > half_hour_time_slot + timedelta(minutes=30)\
+          \ %}fade_slot{% endif %} {{ ns.active_class_name }}\">&nbsp;</div>\n   \
+          \         {% endfor %}\n            {% if day_offset_idx == 0 %}\n     \
+          \           {% set current_time_indicator_progress = now().hour*2 + now().minute/30\
+          \ %}\n                {% set percentage_of_region = (current_time_indicator_progress/timeslots)*100\
+          \ %}\n                <span class=\"current_time_indicator\"\n         \
+          \           style=\"left:{{ percentage_of_region }}%\">&nbsp;</span>\n \
+          \               {% if not show_end_times %}\n                  <span class=\"\
+          current_time_indicator_text\"\n                      style=\"left:{{ percentage_of_region\
+          \ }}%\">Now</span>\n                {% endif %}\n            {% endif %}\n\
+          \        </div>\n    </div>\n{% endfor %}\n"
+        ignore_line_breaks: true
+        type: custom:html-template-card
+      - calShowDescription: false
+        dateFormat: LL
+        disableCalEventLink: true
+        disableCalLink: true
+        disableCalLocationLink: true
+        disableEventLink: true
+        disableLocationLink: true
+        enableModeChange: true
+        entities:
+        - calendar.load_shedding_forecast
+        firstDayOfWeek: 1
+        maxDaysToShow: 7
+        refreshInterval: 1800
+        showAllDayEvents: true
+        showAllDayHours: true
+        showCalendarName: false
+        showCurrentEventLine: false
+        showDate: false
+        showDatePerEvent: false
+        showDeclined: true
+        showDescription: false
+        showEventDate: false
+        showEventIcon: false
+        showFullDayProgress: false
+        showHiddenText: false
+        showLastCalendarWeek: true
+        showLoader: false
+        showLocation: true
+        showMonth: true
+        showMultiDay: false
+        showMultiDayEventParts: false
+        showNoEventsForToday: true
+        showProgressBar: true
+        showRelativeTime: true
+        showTimeRemaining: true
+        showWeekDay: true
+        sortByStartTime: false
+        type: custom:atomic-calendar-revive
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - link_dashboard: true
+        title: Energy distribution today
+        type: energy-distribution
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - entity: switch.sonoff_1000ae8cc9
+        type: tile
+      - entity: sensor.sonoff_1000ae8cc9_current
+        type: tile
+      - entity: sensor.sonoff_1000ae8cc9_energy
+        type: tile
+      - entity: sensor.sonoff_1000ae8cc9_power
+        type: tile
+      - entity: sensor.sonoff_1000ae8cc9_voltage
+        type: tile
+      type: grid
+    title: Energy
+    type: sections
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/a6962571e46e83fe9d34eaa45622a99b/original
+      opacity: 33
+      repeat: repeat
+      size: cover
+    cards: []
+    max_columns: 4
+    path: network
+    sections:
+    - cards:
+      - heading: SpeedTest
+        heading_style: title
+        type: heading
+      - entity: sensor.speedtest_download
+        grid_options:
+          columns: 5
+          rows: auto
+        max: 100
+        name: Download
+        needle: true
+        severity:
+          green: 80
+          red: 20
+          yellow: 50
+        theme: Mushroom
+        type: gauge
+      - entity: sensor.speedtest_upload
+        grid_options:
+          columns: 5
+          rows: auto
+        max: 50
+        name: Upload
+        needle: true
+        severity:
+          green: 40
+          red: 5
+          yellow: 30
+        type: gauge
+      - entity: sensor.speedtest_ping
+        grid_options:
+          columns: 5
+          rows: auto
+        max: 50
+        min: 1
+        name: Ping
+        needle: true
+        severity:
+          green: 20
+          red: 40
+          yellow: 30
+        type: gauge
+      - heading: Switch
+        heading_style: title
+        type: heading
+      type: grid
+    - cards:
+      - heading: CloudKey
+        heading_style: title
+        type: heading
+      - entity: device_tracker.cloudkey
+        type: tile
+      - entity: sensor.cloudkey_uptime
+        type: tile
+      - entity: binary_sensor.cloudkey_hdd_1
+        type: tile
+      - entity: switch.cloudkey_analytics_enabled
+        type: tile
+      - entity: switch.cloudkey_insights_enabled
+        type: tile
+      - entity: sensor.cloudkey_recording_capacity
+        type: tile
+      - entity: sensor.cloudkey_resolution_4k_video
+        type: tile
+      - entity: sensor.cloudkey_resolution_free_space
+        type: tile
+      - entity: sensor.cloudkey_resolution_hd_video
+        type: tile
+      - entity: sensor.cloudkey_type_detections_video
+        type: tile
+      - entity: sensor.cloudkey_type_timelapse_video
+        type: tile
+      - entity: sensor.cloudkey_type_continuous_video
+        type: tile
+      type: grid
+    - cards:
+      - heading: USG 3P ROUTER
+        heading_style: title
+        type: heading
+      - entity: device_tracker.usg_3p_router
+        type: tile
+      - entity: sensor.usg_3p_router_state
+        type: tile
+      - entity: sensor.usg_3p_router_uptime
+        type: tile
+      - entity: update.usg_3p_router
+        type: tile
+      - entity: button.usg_3p_router_restart
+        type: tile
+      type: grid
+    - cards:
+      - heading: AC LR
+        heading_style: title
+        type: heading
+      - entity: update.ac_lr
+        type: tile
+      - entity: device_tracker.ac_lr
+        type: tile
+      - entity: sensor.ac_lr_uptime
+        type: tile
+      - entity: sensor.ac_lr_cpu_utilization
+        type: tile
+      - entity: sensor.ac_lr_memory_utilization
+        type: tile
+      - entity: button.ac_lr_restart
+        type: tile
+      - entity: sensor.ac_lr_state
+        type: tile
+      - entity: sensor.ac_lr_uplink_mac
+        type: tile
+      - heading: AC Pro Home
+        heading_style: title
+        type: heading
+      - entity: device_tracker.ac_pro_home
+        type: tile
+      - entity: sensor.ac_pro_home_state
+        type: tile
+      - entity: sensor.ac_pro_home_uptime
+        type: tile
+      - entity: update.ac_pro_home
+        type: tile
+      - entity: sensor.ac_pro_home_cpu_utilization
+        type: tile
+      - entity: sensor.ac_pro_home_memory_utilization
+        type: tile
+      - entity: button.ac_pro_home_restart
+        type: tile
+      - entity: sensor.ac_pro_home_uplink_mac
+        type: tile
+      type: grid
+    - cards: []
+      type: grid
+    - cards: []
+      type: grid
+    title: Network
+    type: sections
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/52cdb5435e9619990f9f7b9a7b3bf83f/original
+      opacity: 60
+      repeat: repeat
+      size: cover
+    max_columns: 4
+    path: security
+    sections:
+    - cards:
+      - heading: New section
+        type: heading
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - entity: binary_sensor.g4_dome_animal_detected
+        type: tile
+      - entity: binary_sensor.g4_dome_baby_cry_detected
+        type: tile
+      - entity: binary_sensor.g4_dome_co_alarm_detected
+        type: tile
+      - entity: switch.g4_dome_detections_animal
+        type: tile
+      - entity: switch.g4_dome_detections_baby_cry
+        type: tile
+      - entity: switch.g4_dome_detections_person
+        type: tile
+      - entity: switch.g4_dome_detections_smoke
+        type: tile
+      - entity: switch.g4_dome_detections_speaking
+        type: tile
+      - entity: switch.g4_dome_detections_vehicle
+        type: tile
+      - entity: sensor.g4_dome_disk_write_rate
+        type: tile
+      - entity: switch.g4_dome_high_fps
+        type: tile
+      - entity: camera.g4_dome_high_resolution_channel
+        show_entity_picture: true
+        type: tile
+      - entity: number.g4_dome_infrared_custom_lux_trigger
+        type: tile
+      - entity: select.g4_dome_infrared_mode
+        type: tile
+      - entity: binary_sensor.g4_dome_is_dark
+        type: tile
+      - entity: number.g4_dome_microphone_level
+        type: tile
+      - entity: binary_sensor.g4_dome_motion
+        type: tile
+      - entity: switch.g4_dome_overlay_show_date
+        type: tile
+      - entity: switch.g4_dome_overlay_show_logo
+        type: tile
+      - entity: switch.g4_dome_overlay_show_name
+        type: tile
+      - entity: switch.g4_dome_overlay_show_nerd_mode
+        type: tile
+      - entity: binary_sensor.g4_dome_person_detected
+        type: tile
+      - entity: switch.g4_dome_privacy_mode
+        type: tile
+      - entity: select.g4_dome_recording_mode
+        type: tile
+      - entity: binary_sensor.g4_dome_smoke_alarm_detected
+        type: tile
+      - entity: media_player.g4_dome_speaker
+        type: tile
+      - entity: binary_sensor.g4_dome_speaking_detected
+        type: tile
+      - entity: sensor.g4_dome_storage_used
+        type: tile
+      - entity: switch.g4_dome_system_sounds
+        type: tile
+      - entity: binary_sensor.g4_dome_vehicle_detected
+        type: tile
+      - entity: number.g4_dome_wide_dynamic_range
+        type: tile
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - cameras:
+        - camera_entity: camera.g4_dome_high_resolution_channel
+          live_provider: auto
+          triggers:
+            occupancy: true
+        type: custom:advanced-camera-card
+        view:
+          default: live
+          dim: true
+          triggers:
+            show_trigger_status: true
+      type: grid
+    title: Security
+    type: sections
+  - badges: []
+    header:
+      badges_position: bottom
+      card:
+        content: '## Server_Room'
+        text_only: true
+        type: markdown
+      layout: responsive
+    max_columns: 2
+    path: areas-server_room
+    sections: []
+    title: Server_Room
+    type: sections
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/4a739821b10c71f8ab2f8c1367350d2e/original
+      opacity: 33
+      repeat: repeat
+      size: cover
+    badges:
+    - entity: update.sonoff_lan_update
+      type: entity
+    cards: []
+    max_columns: 4
+    path: sonoff
+    sections:
+    - cards:
+      - heading: Plugs
+        heading_style: title
+        type: heading
+      - heading: Plug Temerature
+        heading_style: title
+        type: heading
+      - entity: switch.sonoff_1000bed128
+        type: tile
+      - entity: sensor.sonoff_1000bed128_temperature
+        type: tile
+      - entity: sensor.sonoff_1000bed128_humidity
+        type: tile
+      - heading: 'Plug Power Usage  '
+        heading_style: title
+        type: heading
+      - entity: switch.sonoff_1000ae8cc9
+        type: tile
+      - entity: sensor.sonoff_1000ae8cc9_power
+        type: tile
+      - entity: sensor.sonoff_1000ae8cc9_current
+        type: tile
+      - entity: sensor.sonoff_1000ae8cc9_energy
+        type: tile
+      - entity: sensor.sonoff_1000ae8cc9_voltage
+        type: tile
+      type: grid
+    - cards:
+      - heading: Smart Bulbs
+        heading_style: title
+        type: heading
+      - entity: light.sonoff_10023914d9
+        type: tile
+      - entity: light.sonoff_1001e7777d
+        type: tile
+      - heading: Door Sensors
+        heading_style: title
+        type: heading
+      - entity: binary_sensor.sonoff_10020b7d53
+        type: tile
+      - entity: sensor.sonoff_10020b7d53_battery
+        type: tile
+      - entity: binary_sensor.sonoff_10020b5ecb
+        type: tile
+      type: grid
+    - cards:
+      - heading: RF Bridge
+        heading_style: title
+        type: heading
+      - entity: remote.sonoff_100230e000
+        type: tile
+      - entity: sensor.sonoff_100230e000_rssi
+        type: tile
+      - heading: Fan Plug
+        heading_style: title
+        type: heading
+      type: grid
+    - cards:
+      - heading: SONOFF SNZB-06P
+        type: heading
+      - entity: sensor.sonoff_snzb_06p_last_illumination_state
+        type: tile
+      - entity: binary_sensor.sonoff_snzb_06p
+        type: tile
+      type: grid
+    - cards:
+      - heading: SONOFF SNZB-06P
+        type: heading
+      - entity: sensor.sonoff_snzb_06p_last_illumination_state
+        type: tile
+      - entity: binary_sensor.sonoff_snzb_06p
+        type: tile
+      type: grid
+    title: Sonoff
+    type: sections
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/710970857e63cb9c183fe51af09e2993/original
+      opacity: 33
+      repeat: repeat
+      size: cover
+    cards: []
+    max_columns: 4
+    path: unifi
+    sections:
+    - cards:
+      - heading: New section
+        type: heading
+      - entity: switch.g4_dome_detections_person
+        type: tile
+      - entity: binary_sensor.g4_dome_animal_detected
+        type: tile
+      - entity: binary_sensor.g4_dome_baby_cry_detected
+        type: tile
+      - entity: binary_sensor.g4_dome_co_alarm_detected
+        type: tile
+      - entity: switch.g4_dome_detections_animal
+        type: tile
+      - entity: switch.g4_dome_detections_baby_cry
+        type: tile
+      - entity: switch.g4_dome_detections_smoke
+        type: tile
+      - entity: switch.g4_dome_detections_speaking
+        type: tile
+      - entity: switch.g4_dome_detections_vehicle
+        type: tile
+      - entity: sensor.g4_dome_disk_write_rate
+        type: tile
+      - entity: switch.g4_dome_high_fps
+        type: tile
+      - entity: camera.g4_dome_high_resolution_channel
+        show_entity_picture: true
+        type: tile
+      - entity: number.g4_dome_infrared_custom_lux_trigger
+        type: tile
+      - entity: select.g4_dome_infrared_mode
+        type: tile
+      - entity: binary_sensor.g4_dome_is_dark
+        type: tile
+      - entity: number.g4_dome_microphone_level
+        type: tile
+      - entity: binary_sensor.g4_dome_motion
+        type: tile
+      - entity: switch.g4_dome_overlay_show_date
+        type: tile
+      - entity: switch.g4_dome_overlay_show_logo
+        type: tile
+      - entity: switch.g4_dome_overlay_show_name
+        type: tile
+      - entity: switch.g4_dome_overlay_show_nerd_mode
+        type: tile
+      - entity: binary_sensor.g4_dome_person_detected
+        type: tile
+      - entity: switch.g4_dome_privacy_mode
+        type: tile
+      - entity: select.g4_dome_recording_mode
+        type: tile
+      - entity: binary_sensor.g4_dome_smoke_alarm_detected
+        type: tile
+      - entity: media_player.g4_dome_speaker
+        type: tile
+      - entity: binary_sensor.g4_dome_speaking_detected
+        type: tile
+      - entity: sensor.g4_dome_storage_used
+        type: tile
+      - entity: switch.g4_dome_system_sounds
+        type: tile
+      - entity: number.g4_dome_wide_dynamic_range
+        type: tile
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - entity: sensor.usg_3p_router_uptime
+        type: tile
+      - entity: sensor.usg_3p_router_state
+        type: tile
+      - entity: button.usg_3p_router_restart
+        type: tile
+      - entity: device_tracker.usg_3p_router
+        type: tile
+      - entity: update.usg_3p_router
+        type: tile
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - entity: update.unifi_hotspot_manager_update
+        type: tile
+      - entity: switch.unifi_network_home_assistant
+        type: tile
+      - entity: switch.unifi_network_jellyseer
+        type: tile
+      - entity: switch.unifi_network_lidarr
+        type: tile
+      - entity: switch.unifi_network_prowler
+        type: tile
+      - entity: switch.unifi_network_qbittorrent
+        type: tile
+      - entity: switch.unifi_network_radarr
+        type: tile
+      - entity: update.unifi_network_rule_manager_update
+        type: tile
+      - entity: switch.unifi_network_sabnzbd
+        type: tile
+      - entity: switch.unifi_network_sonarr
+        type: tile
+      type: grid
+    title: UniFi
+    type: sections
+  - max_columns: 4
+    path: test
+    sections:
+    - cards:
+      - content: "{% set qbt_sensor = states.sensor.qbittorrent_all_torrents_summary\
+          \ %}\n{% if qbt_sensor and qbt_sensor.state != 'unavailable' and qbt_sensor.state\
+          \ != 'unknown' %}\n  **\U0001F4E5 qBittorrent: {{ qbt_sensor.state }}**\n\
+          \  {% if qbt_sensor.attributes.torrents_display_list is defined and qbt_sensor.attributes.torrents_display_list\
+          \ | length > 0 %}\n    <br><br>**Current Torrents:**\n    <ul>\n    {% for\
+          \ torrent in qbt_sensor.attributes.torrents_display_list %}\n      <li>{{\
+          \ torrent }}</li>\n    {% endfor %}\n    </ul>\n  {% else %}\n    <br>No\
+          \ active torrents or data available.\n  {% endif %}\n  <br>Last Update:\
+          \ {{ relative_time(qbt_sensor.last_updated) }} ago\n{% else %}\n  qBittorrent\
+          \ sensor not available or no data yet.\n{% endif %}\n"
+        title: Latest qBittorrent Torrents
+        type: markdown
+      - content: "{% set sonarr_event = states.sensor.sonarr_last_event %}\n{% if\
+          \ sonarr_event is not none and sonarr_event.state is not none and sonarr_event.state\
+          \ != 'unknown' %}\n  **\U0001F4FA Sonarr: {{ sonarr_event.attributes.event_type\
+          \ | default('N/A') }} \U0001F4FA**\n  {% if sonarr_event.attributes.series_title\
+          \ is defined and sonarr_event.attributes.series_title != 'N/A' %}\n    <br>Series:\
+          \ {{ sonarr_event.attributes.series_title }}\n  {% endif %}\n  {% if sonarr_event.attributes.episode_title\
+          \ is defined and sonarr_event.attributes.episode_title != 'N/A' and sonarr_event.attributes.season_number\
+          \ is defined and sonarr_event.attributes.season_number != 'N/A' and sonarr_event.attributes.episode_number\
+          \ is defined and sonarr_event.attributes.episode_number != 'N/A' %}\n  \
+          \  <br>Episode: S{{ '%02d' | format(sonarr_event.attributes.season_number\
+          \ | int(0)) }}E{{ '%02d' | format(sonarr_event.attributes.episode_number\
+          \ | int(0)) }}: {{ sonarr_event.attributes.episode_title }}\n  {% endif\
+          \ %}\n  {% if sonarr_event.attributes.release_title is defined and sonarr_event.attributes.release_title\
+          \ != 'N/A' %}\n    <br>Release: {{ sonarr_event.attributes.release_title\
+          \ }}\n  {% endif %}\n  {% if sonarr_event.attributes.message is defined\
+          \ and sonarr_event.attributes.message != 'N/A' %}\n    <br>Details: {{ sonarr_event.attributes.message\
+          \ }}\n  {% elif sonarr_event.attributes.reason is defined and sonarr_event.attributes.reason\
+          \ != 'N/A' %}\n    <br>Reason: {{ sonarr_event.attributes.reason }}\n  {%\
+          \ endif %}\n  <br><br>Last Update: {{ relative_time(sonarr_event.last_updated)\
+          \ }} ago\n{% else %}\n  No Sonarr event received yet.\n{% endif %}"
+        title: Latest Sonarr Event
+        type: markdown
+      - content: "{% set radarr_event = states.sensor.radarr_last_event %} {% if radarr_event.state\
+          \ != 'unknown' and radarr_event.attributes.event_type is defined %}\n  **\U0001F3AC\
+          \ Radarr: {{ radarr_event.attributes.event_type }} \U0001F3AC**\n  {% if\
+          \ radarr_event.attributes.movie_title != 'N/A' %}\n    Movie: {{ radarr_event.attributes.movie_title\
+          \ }} ({{ radarr_event.attributes.movie_year }})\n  {% endif %}\n  {% if\
+          \ radarr_event.attributes.release_title != 'N/A' %}\n    Release: {{ radarr_event.attributes.release_title\
+          \ }}\n  {% endif %}\n  {% if radarr_event.attributes.message != 'N/A' %}\n\
+          \    Details: {{ radarr_event.attributes.message }}\n  {% elif radarr_event.attributes.reason\
+          \ != 'N/A' %}\n    Reason: {{ radarr_event.attributes.reason }}\n  {% endif\
+          \ %}\n  <br>Last Update: {{ relative_time(radarr_event.last_updated) }}\
+          \ ago\n{% else %}\n  No Radarr event received yet.\n{% endif %}\n"
+        title: Latest Radarr Event
+        type: markdown
+      - content: "{% set prowlarr_event = states.sensor.prowlarr_last_event %} {%\
+          \ if prowlarr_event.state != 'unknown' and prowlarr_event.attributes.event_type\
+          \ is defined %}\n  **\U0001F50D Prowlarr: {{ prowlarr_event.attributes.event_type\
+          \ }} \U0001F50D**\n  {% if prowlarr_event.attributes.name != 'N/A' %}\n\
+          \    <br>Item: {{ prowlarr_event.attributes.name }}\n  {% endif %}\n  {%\
+          \ if prowlarr_event.attributes.message != 'N/A' %}\n    <br>Details: {{\
+          \ prowlarr_event.attributes.message }}\n  {% endif %}\n  <br><br>Last Update:\
+          \ {{ relative_time(prowlarr_event.last_updated) }} ago\n{% else %}\n  No\
+          \ Prowlarr event received yet.\n{% endif %}\n"
+        title: Latest Prowlarr Event
+        type: markdown
+      - content: "{% set overseerr_event = states.sensor.overseerr_last_event %} {%\
+          \ if overseerr_event.state != 'unknown' and overseerr_event.attributes.event_type\
+          \ is defined %}\n  **\U0001F3AC Overseerr: {{ overseerr_event.attributes.event_type\
+          \ }} \U0001F3AC**\n  {% if overseerr_event.attributes.media_title != 'N/A'\
+          \ %}\n    <br>Media: {{ overseerr_event.attributes.media_title }} ({{ overseerr_event.attributes.media_type\
+          \ | capitalize }})\n  {% endif %}\n  {% if overseerr_event.attributes.requested_by\
+          \ != 'N/A' %}\n    <br>Requested By: {{ overseerr_event.attributes.requested_by\
+          \ }}\n  {% endif %}\n  {% if overseerr_event.attributes.message != 'N/A'\
+          \ %}\n    <br>Message: {{ overseerr_event.attributes.message }}\n  {% endif\
+          \ %}\n  <br><br>Last Update: {{ relative_time(overseerr_event.last_updated)\
+          \ }} ago\n{% else %}\n  No Overseerr event received yet.\n{% endif %}\n"
+        title: Latest Overseerr Event
+        type: markdown
+      - content: "{% set tautulli_event = states.sensor.tautulli_last_event %} {%\
+          \ if tautulli_event.state != 'unknown' and tautulli_event.attributes.event_type\
+          \ is defined %}\n  **\U0001F3AC Tautulli: {{ tautulli_event.attributes.event_type\
+          \ | capitalize }} \U0001F3AC**\n  {% if tautulli_event.attributes.username\
+          \ != 'N/A' %}\n    <br>User: {{ tautulli_event.attributes.username }}\n\
+          \  {% endif %}\n  {% if tautulli_event.attributes.title != 'N/A' %}\n  \
+          \  <br>Media: {{ tautulli_event.attributes.title }}\n    {% if tautulli_event.attributes.episode_title\
+          \ != 'N/A' %} - {{ tautulli_event.attributes.episode_title }}{% endif %}\n\
+          \  {% endif %}\n  {% if tautulli_event.attributes.player != 'N/A' %}\n \
+          \   <br>Player: {{ tautulli_event.attributes.player }}\n  {% endif %}\n\
+          \  <br><br>Last Update: {{ relative_time(tautulli_event.last_updated) }}\
+          \ ago\n{% else %}\n  No Tautulli event received yet.\n{% endif %}\n"
+        title: Latest Tautulli Event
+        type: markdown
+      - content: "{% set huntarr_event = states.sensor.huntarr_last_event %} {% if\
+          \ huntarr_event.state != 'unknown' %}\n  **\U0001F575\uFE0F Huntarr: {{\
+          \ huntarr_event.state }} \U0001F575\uFE0F**\n  <br><br>Last Update: {{ relative_time(huntarr_event.last_updated)\
+          \ }} ago\n  {% if huntarr_event.attributes.full_payload != '{}' %}\n   \
+          \ <br><br>Full Payload (for debugging): <pre>{{ huntarr_event.attributes.full_payload\
+          \ | truncate(200, true, '...') }}</pre>\n  {% endif %}\n{% else %}\n  No\
+          \ Huntarr event received yet.\n{% endif %}\n"
+        title: Latest Huntarr Event
+        type: markdown
+      - content: "{% set jellyfin_event = states.sensor.jellyfin_last_event %} {%\
+          \ if jellyfin_event.state != 'unknown' and jellyfin_event.attributes.event_name\
+          \ is defined %}\n  **\U0001F3B5 Jellyfin: {{ jellyfin_event.attributes.event_name\
+          \ }} \U0001F3B5**\n  {% if jellyfin_event.attributes.item_name != 'N/A'\
+          \ %}\n    <br>Item: {{ jellyfin_event.attributes.item_name }} ({{ jellyfin_event.attributes.item_type\
+          \ | capitalize }})\n  {% endif %}\n  {% if jellyfin_event.attributes.user_name\
+          \ != 'N/A' %}\n    <br>User: {{ jellyfin_event.attributes.user_name }}\n\
+          \  {% endif %}\n  <br><br>Last Update: {{ relative_time(jellyfin_event.last_updated)\
+          \ }} ago\n{% else %}\n  No Jellyfin event received yet.\n{% endif %}\n"
+        title: Latest Jellyfin Event
+        type: markdown
+      - content: "{% set lidarr_event = states.sensor.lidarr_last_event %} {% if lidarr_event.state\
+          \ != 'unknown' and lidarr_event.attributes.event_type is defined %}\n  **\U0001F3B6\
+          \ Lidarr: {{ lidarr_event.attributes.event_type }} \U0001F3B6**\n  {% if\
+          \ lidarr_event.attributes.artist_name != 'N/A' %}\n    <br>Artist: {{ lidarr_event.attributes.artist_name\
+          \ }}\n  {% endif %}\n  {% if lidarr_event.attributes.album_title != 'N/A'\
+          \ %}\n    <br>Album: {{ lidarr_event.attributes.album_title }}\n  {% endif\
+          \ %}\n  {% if lidarr_event.attributes.release_title != 'N/A' %}\n    <br>Release:\
+          \ {{ lidarr_event.attributes.release_title }}\n  {% endif %}\n  {% if lidarr_event.attributes.message\
+          \ != 'N/A' %}\n    <br>Details: {{ lidarr_event.attributes.message }}\n\
+          \  {% elif lidarr_event.attributes.reason != 'N/A' %}\n    <br>Reason: {{\
+          \ lidarr_event.attributes.reason }}\n  {% endif %}\n  <br><br>Last Update:\
+          \ {{ relative_time(lidarr_event.last_updated) }} ago\n{% else %}\n  No Lidarr\
+          \ event received yet.\n{% endif %}\n"
+        title: Latest Lidarr Event
+        type: markdown
+      - content: "{% set readarr_event = states.sensor.readarr_last_event %} {% if\
+          \ readarr_event.state != 'unknown' and readarr_event.attributes.event_type\
+          \ is defined %}\n  **\U0001F4DA Readarr: {{ readarr_event.attributes.event_type\
+          \ }} \U0001F4DA**\n  {% if readarr_event.attributes.book_title != 'N/A'\
+          \ %}\n    <br>Book: {{ readarr_event.attributes.book_title }}\n  {% endif\
+          \ %}\n  {% if readarr_event.attributes.author_name != 'N/A' %}\n    <br>Author:\
+          \ {{ readarr_event.attributes.author_name }}\n  {% endif %}\n  {% if readarr_event.attributes.release_title\
+          \ != 'N/A' %}\n    <br>Release: {{ readarr_event.attributes.release_title\
+          \ }}\n  {% endif %}\n  {% if readarr_event.attributes.message != 'N/A' %}\n\
+          \    <br>Details: {{ readarr_event.attributes.message }}\n  {% elif readarr_event.attributes.reason\
+          \ != 'N/A' %}\n    <br>Reason: {{ readarr_event.attributes.reason }}\n \
+          \ {% endif %}\n  <br><br>Last Update: {{ relative_time(readarr_event.last_updated)\
+          \ }} ago\n{% else %}\n  No Readarr event received yet.\n{% endif %}\n"
+        title: Latest Readarr Event
+        type: markdown
+      type: grid
+    - cards:
+      - entity: calendar.llm_vision_timeline
+        language: en
+        number_of_events: 5
+        number_of_hours: 24
+        type: custom:llmvision-card
+      - hours_to_show: 72
+        target:
+          entity_id:
+          - sensor.combined_webhook_notifications
+          - automation.sonarr_webhook
+        title: All Media Webhook Events
+        type: logbook
+      type: grid
+    - cards:
+      - content: "{% set log_entries = state_attr('sensor.combined_webhook_notifications',\
+          \ 'log_entries') %}\n{% if log_entries is not none and log_entries | length\
+          \ > 0 %}\n  {% for entry in log_entries %}\n    **{{ entry.time }} ({{ entry.source\
+          \ }}):** {{ entry.message }}<br>\n  {% endfor %}\n{% else %}\n  No webhook\
+          \ events logged yet.\n{% endif %}\n"
+        grid_options:
+          columns: 12
+          rows: 1
+        title: Servarr Logs
+        type: markdown
+      - content: "{% set log_entries = state_attr('sensor.combined_webhook_notifications',\
+          \ 'log_entries') | default([]) %}\n\n{% if log_entries | length > 0 %}\n\
+          \  {% for entry in log_entries %}\n    {% set icon = '' %}\n    {% if entry.source\
+          \ == 'Sonarr' %}{% set icon = '\U0001F4FA' %}\n    {% elif entry.source\
+          \ == 'Radarr' %}{% set icon = '\U0001F37F' %}\n    {% elif entry.source\
+          \ == 'Lidarr' %}{% set icon = '\U0001F3B5' %}\n    {% elif entry.source\
+          \ == 'Readarr' %}{% set icon = '\U0001F4DA' %}\n    {% elif entry.source\
+          \ == 'Prowlarr' %}{% set icon = '\U0001F50D' %}\n    {% elif entry.source\
+          \ == 'Overseerr' %}{% set icon = '\u2B50' %}\n    {% elif entry.source ==\
+          \ 'Tautulli' %}{% set icon = '\U0001F4CA' %}\n    {% elif entry.source ==\
+          \ 'Jellyfin' %}{% set icon = '\U0001F3AC' %}\n    {% elif entry.source ==\
+          \ 'Huntarr' %}{% set icon = '\U0001F3AF' %}\n    {% endif %}\n\n    {% set\
+          \ display_message = entry.message %}\n\n    {# Specifically shorten Sonarr\
+          \ messages for card display #}\n    {% if entry.source == 'Sonarr' %}\n\
+          \      {# Example input: \"\U0001F4FA Sonarr: Download \U0001F4FA Series:\
+          \ WWE Raw Episode: S33E27: RAW 1675 Release: WWE Monday Night Raw 2025 07\
+          \ 07 1080p WEB h264-KYR [TJET]\" #}\n      {# Target: \"Download Series:\
+          \ WWE Raw Episode: S33E27: RAW 1675\" #}\n      {% set temp_message = display_message\
+          \ %}\n      {% if ' Release:' in temp_message %}\n        {% set temp_message\
+          \ = temp_message.split(' Release:', 1)[0] %} {# Take everything before '\
+          \ Release:' #}\n      {% endif %}\n      {# Remove initial \"\U0001F4FA\
+          \ Sonarr: \" and standardize \"\U0001F4FA Series: \" #}\n      {% set temp_message\
+          \ = temp_message | replace('\U0001F4FA Sonarr: ', '') %}\n      {% set temp_message\
+          \ = temp_message | replace('\U0001F4FA Series: ', 'Series: ') %}\n     \
+          \ {% set display_message = temp_message | trim %}\n    {% else %}\n    \
+          \  {# For other apps, remove their icon + source from the message if it's\
+          \ duplicated #}\n      {# Example: \"\U0001F37F Radarr: Grab\" should become\
+          \ just \"Grab\" if the card adds \"Radarr:\" #}\n      {% set prefix = icon\
+          \ ~ ' ' ~ entry.source ~ ': ' %}\n      {% if display_message.startswith(prefix)\
+          \ %}\n        {% set display_message = display_message[prefix | length:]\
+          \ | trim %}\n      {% endif %}\n    {% endif %}\n\n    **{{ icon }} {{ entry.source\
+          \ }}:** {{ display_message }}<br>\n    <small>{{ entry.time }}</small><br><br>\n\
+          \  {% endfor %}\n{% else %}\n  No webhook events logged yet.\n{% endif %}\n"
+        grid_options:
+          columns: 12
+          rows: 1
+        title: Servarr Logs
+        type: markdown
+      column_span: 2
+      type: grid
+    title: test
+    type: sections

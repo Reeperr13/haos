@@ -1,0 +1,7 @@
+resources:
+  - url: /local/custom_lovelace/html_template_card/html-template-card.js
+    type: js
+    
+  - type: custom:upcoming-media-card
+    entity: sensor.sonarr_upcoming_media
+    title: Upcoming TV 

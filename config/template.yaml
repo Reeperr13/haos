@@ -1,0 +1,513 @@
+# Contents of template.yaml file
+
+# Original energy consumption sensors
+- sensor:
+  - name: "Current Tariff"
+    unit_of_measurement: "ZAR/kWh"
+    state: >
+      {% set voltage = 220 %}
+      {% set current = states('sensor.sonoff_1000ae8cc9_current') | float(0) %}
+      {% set power = current * voltage %}
+      {% if power < 50 %}
+        {{ states('input_number.tariff_1_c_block1') | float(0) }}
+      {% elif power < 350 %}
+        {{ states('input_number.tariff_1_c_block2') | float(0) }}
+      {% elif power < 600 %}
+        {{ states('input_number.tariff_1_c_block3') | float(0) }}
+      {% else %}
+        {{ states('input_number.tariff_1_c_block4') | float(0) }}
+      {% endif %}
+  - name: "Energy Cost"
+    unit_of_measurement: "ZAR"
+    state: "{{ states('sensor.current_tariff') | float(0) }}"
+  - name: "Monthly Cost"
+    unit_of_measurement: "ZAR"
+    state: "{{ states('sensor.utility_meter_energy_monthly') | float(0) * states('sensor.current_tariff') | float(0) }}"
+  - name: internet_speed_in
+    device_class: data_rate
+    unit_of_measurement: 'Mbit/s'
+    state: >
+      {% set wan_traffic_delta_in = states('input_number.wan_traffic_delta_in') | default(0) | float(0) %}
+      {{ ((wan_traffic_delta_in / 1000000) ) | round(3) }}
+  - name: internet_speed_out
+    device_class: data_rate
+    unit_of_measurement: 'Mbit/s'
+    state: >
+      {% set wan_traffic_delta_out = states('input_number.wan_traffic_delta_out') | default(0) | float(0) %}
+      {{ ((wan_traffic_delta_out / 1000000) ) | round(3) }}
+  - name: internet_usage_in
+    device_class: data_size
+    unit_of_measurement: 'GB'
+    state: "{{ ((states('sensor.snmp_wan_in') | float(0) ) / 1000000000 ) | round(3) }}"
+  - name: internet_usage_out
+    device_class: data_size
+    unit_of_measurement: 'GB'
+    state: "{{ ((states('sensor.snmp_wan_out') | float(0) ) / 1000000000 ) | round(3) }}"
+
+# qBittorrent sensors (with NoneType fix)
+- trigger:
+  - platform: event
+    event_type: qbittorrent_torrent_list_updated
+  sensor:
+  - name: "qBittorrent All Torrents Summary"
+    unique_id: qbittorrent_all_torrents_summary
+    icon: mdi:torrent
+    state: >
+      {# Safely get torrent data, defaulting to empty dict if trigger/data is not yet defined #}
+      {% set all_torrents_data = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.torrents is defined else {} %}
+      {# If all_torrents_data is itself not iterable (e.g., None), default to empty dict #}
+      {% if all_torrents_data is none %}
+        {% set all_torrents_data = {} %}
+      {% endif %}
+      {# torrent_data should be all_torrents_data (the dictionary of torrents), not just the first one #}
+      {% set torrent_data = all_torrents_data %}
+
+      {% if torrent_data | length > 0 %}
+        {% set downloading_count = torrent_data.values() | selectattr('state', 'eq', 'downloading') | list | count %}
+        {% set total_torrents = torrent_data | count %}
+        {{ downloading_count }} downloading / {{ total_torrents }} total
+      {% else %}
+        No torrent data available.
+      {% endif %}
+    attributes:
+      torrents_display_list: >
+        {% set ns_display = namespace(list=[]) %}
+        {% set all_torrents_data = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.torrents is defined else {} %}
+        {% if all_torrents_data is none %}
+          {% set all_torrents_data = {} %}
+        {% endif %}
+        {% set torrent_data = all_torrents_data %} {# Use all torrents for iteration #}
+
+        {% if torrent_data | length > 0 %}
+          {% for name_or_hash, details in torrent_data.items() %}
+            {# Use the 'name' from details if available and valid, fallback to key if it's a hash, otherwise use key directly #}
+            {% set display_name = details.name if details.name is defined and details.name | length > 0 else (details.id if name_or_hash | length == 40 and details.id is defined else name_or_hash) %}
+            {% set progress = (details.progress | float(0) * 100) | round(1) | default(0) %}
+            {% set display_string = display_name ~ " " ~ progress ~ " %" %}
+            {% set ns_display.list = ns_display.list + [display_string] %}
+          {% endfor %}
+        {% endif %}
+        {{ ns_display.list }}
+      torrents_details: |
+        {% set ns_details = namespace(list=[]) %}
+        {% set all_torrents_data = trigger.event.data.torrents if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.torrents is defined else {} %}
+        {% if all_torrents_data is none %}
+          {% set all_torrents_data = {} %}
+        {% endif %}
+        {% set torrent_data = all_torrents_data %}
+
+        {% if torrent_data | length > 0 %}
+          {% for name_or_hash, details in torrent_data.items() %}
+            {% set torrent_obj = {
+              'name': (details.name if details.name is defined and details.name | length > 0 else (details.id if name_or_hash | length == 40 and details.id is defined else name_or_hash)),
+              'status': details.state | default('unknown'),
+              'percent_done': (details.progress | float(0) * 100) | round(2) | default(0),
+              'added_date': (details.added_on | int | timestamp_local).strftime('%Y-%m-%d %H:%M:%S') if details.added_on is defined else '',
+              'eta': (details.eta | int | duration_as_string) if details.eta is defined and details.eta != -1 else '',
+              'ratio': details.ratio | float(0)
+            } %}
+            {% set ns_details.list = ns_details.list + [torrent_obj] %}
+          {% endfor %}
+        {% endif %}
+        {{ ns_details.list }}
+
+# Sonarr Last Event Sensor
+- trigger:
+  - platform: event
+    event_type: sonarr_webhook_received
+  sensor:
+  - name: "Sonarr Last Event"
+    unique_id: sonarr_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.eventType | default('Unknown Event') }}"
+    attributes:
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+      event_type: "{{ trigger.event.data.json_payload.eventType | default('Unknown Event') }}"
+      series_id: "{{ trigger.event.data.json_payload.series.id | default('N/A') if trigger.event.data.json_payload.series is defined else 'N/A' }}"
+      series_title: "{{ trigger.event.data.json_payload.series.title | default('N/A') if trigger.event.data.json_payload.series is defined else 'N/A' }}"
+      episode_id: "{{ (trigger.event.data.json_payload.episodes[0].id | default('N/A')) if trigger.event.data.json_payload.episodes is defined and trigger.event.data.json_payload.episodes | length > 0 else 'N/A' }}"
+      episode_title: "{{ (trigger.event.data.json_payload.episodes[0].title | default('N/A')) if trigger.event.data.json_payload.episodes is defined and trigger.event.data.json_payload.episodes | length > 0 else 'N/A' }}"
+      season_number: "{{ (trigger.event.data.json_payload.episodes[0].seasonNumber | default('N/A')) if trigger.event.data.json_payload.episodes is defined and trigger.event.data.json_payload.episodes | length > 0 else 'N/A' }}"
+      episode_number: "{{ (trigger.event.data.json_payload.episodes[0].episodeNumber | default('N/A')) if trigger.event.data.json_payload.episodes is defined and trigger.event.data.json_payload.episodes | length > 0 else 'N/A' }}"
+      release_title: "{{ trigger.event.data.json_payload.release.releaseTitle | default('N/A') if trigger.event.data.json_payload.release is defined else 'N/A' }}"
+      release_quality: "{{ trigger.event.data.json_payload.release.quality | default('N/A') if trigger.event.data.json_payload.release is defined else 'N/A' }}"
+      download_client: "{{ trigger.event.data.json_payload.downloadClient | default('N/A') }}"
+      message: "{{ trigger.event.data.json_payload.message | default('N/A') if 'message' in trigger.event.data.json_payload else 'N/A' }}"
+      reason: "{{ trigger.event.data.json_payload.reason | default('N/A') if 'reason' in trigger.event.data.json_payload else 'N/A' }}"
+
+
+  # Sonarr Notification Log
+  - name: "Sonarr Notification Log"
+    unique_id: sonarr_notification_log
+    state: >
+      {% set trigger_json = trigger.event.data.json_payload %}
+      {% set event_type = trigger_json.eventType | default('Unknown Event') %}
+      {% set series_title = trigger_json.series.title | default('N/A') if trigger_json.series is defined and trigger_json.series is not none else 'N/A' %}
+      {% set episode_title = (trigger_json.episodes[0].title | default('N/A') if trigger_json.episodes | length > 0 else 'N/A') if trigger_json.episodes is defined and trigger_json.episodes is not none else 'N/A' %}
+      {% set season_num = (trigger_json.episodes[0].seasonNumber | default(0) if trigger_json.episodes is defined and trigger_json.episodes is not none and trigger_json.episodes | length > 0 else 0) %}
+      {% set episode_num = (trigger_json.episodes[0].episodeNumber | default(0) if trigger_json.episodes is defined and trigger_json.episodes is not none and trigger_json.episodes | length > 0 else 0) %}
+      {% set final_message = '📺 Sonarr: ' ~ event_type %}
+      {% if series_title != 'N/A' %}
+        {% set final_message = final_message ~ ' 📺 Series: ' ~ series_title %}
+      {% endif %}
+      {% if episode_title != 'N/A' %}
+        {% set final_message = final_message ~ ' Episode: S' ~ '%02d' | format(season_num) ~ 'E' ~ '%02d' | format(episode_num) ~ ': ' ~ episode_title %}
+      {% endif %}
+      {% set release_title = trigger_json.release.releaseTitle | default('N/A') if trigger_json.release is defined and trigger_json.release is not none else 'N/A' %}
+      {% if release_title != 'N/A' %}
+        {% set final_message = final_message ~ " Release: " ~ release_title %}
+      {% endif %}
+      {{ final_message }}
+    attributes:
+      timestamp: "{{ now() }}"
+
+# Radarr Last Event Sensor
+- trigger:
+  - platform: event
+    event_type: radarr_webhook_received
+  sensor:
+  - name: "Radarr Last Event"
+    unique_id: radarr_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.eventType | default('Unknown Event') }}"
+    attributes:
+      event_type: "{{ trigger.event.data.json_payload.eventType | default('Unknown') }}"
+      movie_title: "{{ trigger.event.data.json_payload.movie.title | default('N/A') if trigger.event.data.json_payload.movie is defined else 'N/A' }}"
+      movie_year: "{{ trigger.event.data.json_payload.movie.year | default('N/A') if trigger.event.data.json_payload.movie is defined else 'N/A' }}"
+      release_title: "{{ trigger.event.data.json_payload.release.releaseTitle | default('N/A') if trigger.event.data.json_payload.release is defined else 'N/A' }}"
+      release_quality: "{{ trigger.event.data.json_payload.release.quality | default('N/A') if trigger.event.data.json_payload.release is defined else 'N/A' }}"
+      download_client: "{{ trigger.event.data.json_payload.downloadClient | default('N/A') }}"
+      message: "{{ trigger.event.data.json_payload.message | default('N/A') if 'message' in trigger.event.data.json_payload else 'N/A' }}"
+      reason: "{{ trigger.event.data.json_payload.reason | default('N/A') if 'reason' in trigger.event.data.json_payload else 'N/A' }}"
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+
+  # Radarr Notification Log Sensor - This is the one that feeds the combined log
+  - name: "Radarr Notification Log"
+    unique_id: radarr_notification_log
+    state: >
+      {% set payload = trigger.event.json_payload %}
+      {% set event_type = payload.eventType | default('Unknown Event') %}
+
+      {# Safely get movie and release details, checking if the parent objects exist #}
+      {% set movie_title = payload.movie.title | default('N/A') if payload.movie is defined and payload.movie is not none else 'N/A' %}
+      {% set release_title = payload.release.releaseTitle | default('N/A') if payload.release is defined and payload.release is not none else 'N/A' %}
+      {% set remote_movie_title = payload.remoteMovie.title | default('N/A') if payload.remoteMovie is defined and payload.remoteMovie is not none else 'N/A' %}
+
+      {# Construct the full desired message #}
+      {% set message = "🍿 Radarr: " ~ event_type %}
+
+      {% if movie_title != 'N/A' %}
+        {% set message = message ~ " 🍿 Movie: " ~ movie_title %}
+      {% elif remote_movie_title != 'N/A' %}
+        {% set message = message ~ " 🍿 Movie: " ~ remote_movie_title %}
+      {% endif %}
+
+      {% if release_title != 'N/A' %}
+        {% set message = message ~ " Release: " ~ release_title %}
+      {% endif %}
+      {{ message }}
+
+# Overseerr Last Event Sensor
+- trigger:
+  - platform: event
+    event_type: overseerr_webhook_received
+  sensor:
+  - name: "Overseerr Last Event"
+    unique_id: overseerr_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.notification_type | default('Unknown Event') }}"
+    attributes:
+      event_type: "{{ trigger.event.data.json_payload.notification_type | default('Unknown') }}"
+      media_title: "{{ trigger.event.data.json_payload.media.title | default('N/A') if trigger.event.data.json_payload.media is defined else 'N/A' }}"
+      media_type: "{{ trigger.event.data.json_payload.media.mediaType | default('N/A') if trigger.event.data.json_payload.media is defined else 'N/A' }}"
+      requested_by: "{{ trigger.event.data.json_payload.request.requestedBy.username | default('N/A') if trigger.event.data.json_payload.request is defined and trigger.event.data.json_payload.request.requestedBy is defined else 'N/A' }}"
+      message: "{{ trigger.event.data.json_payload.message | default('N/A') if 'message' in trigger.event.data.json_payload else 'N/A' }}"
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+
+  # Overseerr Notification Log Sensor
+  - name: "Overseerr Notification Log"
+    unique_id: overseerr_notification_log
+    state: >
+      {% set payload = trigger.event.json_payload %}
+      {% set notification_type = payload.notification_type | default('Unknown Event') %}
+      {% set media_title = payload.media.title | default('N/A') if payload.media is defined and payload.media is not none else 'N/A' %}
+      {% set media_type = payload.media.mediaType | default('N/A') if payload.media is defined and payload.media is not none else 'N/A' %}
+      {% set requested_by = payload.request.requestedBy.username | default('N/A') if payload.request is defined and payload.request is not none and payload.request.requestedBy is defined and payload.request.requestedBy is not none else 'N/A' %}
+      {% set message_content = payload.message | default('N/A') if 'message' in payload else 'N/A' %}
+
+      {% set final_message = "⭐ Overseerr: " ~ notification_type %}
+      {% if media_title != 'N/A' %}
+        {% set final_message = final_message ~ " Title: " ~ media_title %}
+      {% endif %}
+      {% if media_type != 'N/A' %}
+        {% set final_message = final_message ~ " Type: " ~ media_type %}
+      {% endif %}
+      {% if requested_by != 'N/A' %}
+        {% set final_message = final_message ~ " Requested by: " ~ requested_by %}
+      {% endif %}
+      {% if message_content != 'N/A' %}
+        {% set final_message = final_message ~ " Message: " ~ message_content %}
+      {% endif %}
+      {{ final_message }}
+
+# Prowlarr Last Event Sensor
+- trigger:
+  - platform: event
+    event_type: prowlarr_webhook_received
+  sensor:
+  - name: "Prowlarr Last Event"
+    unique_id: prowlarr_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.eventType | default('Unknown Event') }}"
+    attributes:
+      event_type: "{{ trigger.event.data.json_payload.eventType | default('Unknown') }}"
+      message: "{{ trigger.event.data.json_payload.message | default('N/A') if 'message' in trigger.event.data.json_payload else 'N/A' }}"
+      name: "{{ trigger.event.data.json_payload.name | default('N/A') if 'name' in trigger.event.data.json_payload else 'N/A' }}"
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+
+  # Prowlarr Notification Log Sensor
+  - name: "Prowlarr Notification Log"
+    unique_id: prowlarr_notification_log
+    state: >
+      {% set payload = trigger.event.json_payload %}
+      {% set event_type = payload.eventType | default('Unknown Event') %}
+      {% set message_text = payload.message | default('N/A') if 'message' in payload else 'N/A' %}
+      {% set name = payload.name | default('N/A') if 'name' in payload else 'N/A' %}
+
+      {% set final_message = "🔍 Prowlarr: " ~ event_type %}
+      {% if name != 'N/A' %}
+        {% set final_message = final_message ~ " Name: " ~ name %}
+      {% endif %}
+      {% if message_text != 'N/A' %}
+        {% set final_message = final_message ~ " Message: " ~ message_text %}
+      {% endif %}
+      {{ final_message }}
+
+
+# Tautulli Last Event Sensor
+- trigger:
+  - platform: event
+    event_type: tautulli_webhook_received
+  sensor:
+  - name: "Tautulli Last Event"
+    unique_id: tautulli_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.event | default('Unknown Event') }}"
+    attributes:
+      event_type: "{{ trigger.event.data.json_payload.event | default('Unknown') }}"
+      username: "{{ trigger.event.data.json_payload.username | default('N/A') if 'username' in trigger.event.data.json_payload else 'N/A' }}"
+      media_type: "{{ trigger.event.data.json_payload.media_type | default('N/A') if 'media_type' in trigger.event.data.json_payload else 'N/A' }}"
+      title: "{{ trigger.event.data.json_payload.title | default('N/A') if 'title' in trigger.event.data.json_payload else 'N/A' }}"
+      episode_title: "{{ trigger.event.data.json_payload.episode_title | default('N/A') if 'episode_title' in trigger.event.data.json_payload else 'N/A' }}"
+      player: "{{ trigger.event.data.json_payload.player | default('N/A') if 'player' in trigger.event.data.json_payload else 'N/A' }}"
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+
+  # Tautulli Notification Log Sensor
+  - name: "Tautulli Notification Log"
+    unique_id: tautulli_notification_log
+    state: >
+      {% set payload = trigger.event.json_payload %}
+      {% set event_type = payload.event | default('Unknown Event') %}
+      {% set username = payload.username | default('N/A') if 'username' in payload else 'N/A' %}
+      {% set media_type = payload.media_type | default('N/A') if 'media_type' in payload else 'N/A' %}
+      {% set title = payload.title | default('N/A') if 'title' in payload else 'N/A' %}
+      {% set episode_title = payload.episode_title | default('N/A') if 'episode_title' in payload else 'N/A' %}
+      {% set player = payload.player | default('N/A') if 'player' in payload else 'N/A' %}
+
+      {% set final_message = "📊 Tautulli: " ~ event_type %}
+      {% if username != 'N/A' %}
+        {% set final_message = final_message ~ " User: " ~ username %}
+      {% endif %}
+      {% if media_type != 'N/A' %}
+        {% set final_message = final_message ~ " Type: " ~ media_type %}
+      {% endif %}
+      {% if title != 'N/A' %}
+        {% set final_message = final_message ~ " Title: " ~ title %}
+      {% endif %}
+      {% if episode_title != 'N/A' %}
+        {% set final_message = final_message ~ " Episode: " ~ episode_title %}
+      {% endif %}
+      {% if player != 'N/A' %}
+        {% set final_message = final_message ~ " Player: " ~ player %}
+      {% endif %}
+      {{ final_message }}
+
+# Huntarr Last Event Sensor (Generic)
+- trigger:
+  - platform: event
+    event_type: huntarr_webhook_received
+  sensor:
+  - name: "Huntarr Last Event"
+    unique_id: huntarr_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.eventType | default('Unknown Event') if trigger.event.data.json_payload is defined else 'Unknown Event' }}"
+    attributes:
+      event_type: "{{ trigger.event.data.json_payload.eventType | default('Unknown') }}"
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+
+  # Huntarr Notification Log Sensor
+  - name: "Huntarr Notification Log"
+    unique_id: huntarr_notification_log
+    state: >
+      {% set payload = trigger.event.json_payload %}
+      {% set event_type = payload.eventType | default('Unknown Event') %}
+      {# Assuming Huntarr has a 'message' or 'item' field based on common webhook structures #}
+      {% set message_content = payload.message | default('N/A') if 'message' in payload else 'N/A' %}
+      {% set item_name = payload.item.name | default('N/A') if payload.item is defined and payload.item is not none else 'N/A' %}
+
+      {% set final_message = "🎯 Huntarr: " ~ event_type %}
+      {% if message_content != 'N/A' %}
+        {% set final_message = final_message ~ " Message: " ~ message_content %}
+      {% elif item_name != 'N/A' %}
+        {% set final_message = final_message ~ " Item: " ~ item_name %}
+      {% endif %}
+      {{ final_message }}
+
+# Jellyfin Last Event Sensor
+- trigger:
+  - platform: event
+    event_type: jellyfin_webhook_received
+  sensor:
+  - name: "Jellyfin Last Event"
+    unique_id: jellyfin_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.EventName | default('Unknown Event') }}"
+    attributes:
+      event_name: "{{ trigger.event.data.json_payload.EventName | default('Unknown') }}"
+      item_name: "{{ trigger.event.data.json_payload.Item.Name | default('N/A') if trigger.event.data.json_payload.Item is defined else 'N/A' }}"
+      item_type: "{{ trigger.event.data.json_payload.Item.Type | default('N/A') if trigger.event.data.json_payload.Item is defined else 'N/A' }}"
+      user_name: "{{ trigger.event.data.json_payload.User.Name | default('N/A') if trigger.event.data.json_payload.User is defined else 'N/A' }}"
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+
+  # Jellyfin Notification Log Sensor
+  - name: "Jellyfin Notification Log"
+    unique_id: jellyfin_notification_log
+    state: >
+      {% set payload = trigger.event.json_payload %}
+      {% set event_name = payload.EventName | default('Unknown Event') %}
+      {% set item_name = payload.Item.Name | default('N/A') if payload.Item is defined and payload.Item is not none else 'N/A' %}
+      {% set item_type = payload.Item.Type | default('N/A') if payload.Item is defined and payload.Item is not none else 'N/A' %}
+      {% set user_name = payload.User.Name | default('N/A') if payload.User is defined and payload.User is not none else 'N/A' %}
+
+      {% set final_message = "🎬 Jellyfin: " ~ event_name %}
+      {% if item_name != 'N/A' %}
+        {% set final_message = final_message ~ " Item: " ~ item_name %}
+      {% endif %}
+      {% if item_type != 'N/A' %}
+        {% set final_message = final_message ~ " Type: " ~ item_type %}
+      {% endif %}
+      {% if user_name != 'N/A' %}
+        {% set final_message = final_message ~ " User: " ~ user_name %}
+      {% endif %}
+      {{ final_message }}
+
+# Lidarr Last Event Sensor
+- trigger:
+  - platform: event
+    event_type: lidarr_webhook_received
+  sensor:
+  - name: "Lidarr Last Event"
+    unique_id: lidarr_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.eventType | default('Unknown Event') }}"
+    attributes:
+      event_type: "{{ trigger.event.data.json_payload.eventType | default('Unknown') }}"
+      artist_name: "{{ trigger.event.data.json_payload.artist.artistName | default('Unknown Artist') if trigger.event.data.json_payload.artist is defined else 'Unknown Artist' }}"
+      album_title: "{{ trigger.event.data.json_payload.album.title | default('N/A') if trigger.event.data.json_payload.album is defined else 'N/A' }}"
+      release_title: "{{ trigger.event.data.json_payload.release.releaseTitle | default('N/A') if trigger.event.data.json_payload.release is defined else 'N/A' }}"
+      release_quality: "{{ trigger.event.data.json_payload.release.quality | default('N/A') if trigger.event.data.json_payload.release is defined else 'N/A' }}"
+      download_client: "{{ trigger.event.data.json_payload.downloadClient | default('N/A') }}"
+      message: "{{ trigger.event.data.json_payload.message | default('N/A') if 'message' in trigger.event.data.json_payload else 'N/A' }}"
+      reason: "{{ trigger.event.data.json_payload.reason | default('N/A') if 'reason' in trigger.event.data.json_payload else 'N/A' }}"
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+
+  # Lidarr Notification Log Sensor
+  - name: "Lidarr Notification Log"
+    unique_id: lidarr_notification_log
+    state: >
+      {% set payload = trigger.event.json_payload %}
+      {% set event_type = payload.eventType | default('Unknown Event') %}
+      {% set artist_name = payload.artist.artistName | default('Unknown Artist') if payload.artist is defined and payload.artist is not none else 'Unknown Artist' %}
+      {% set album_title = payload.album.title | default('N/A') if payload.album is defined and payload.album is not none else 'N/A' %}
+      {% set release_title = payload.release.releaseTitle | default('N/A') if payload.release is defined and payload.release is not none else 'N/A' %}
+
+      {% set final_message = "🎵 Lidarr: " ~ event_type %}
+      {% if artist_name != 'Unknown Artist' %}
+        {% set final_message = final_message ~ " Artist: " ~ artist_name %}
+      {% endif %}
+      {% if album_title != 'N/A' %}
+        {% set final_message = final_message ~ " Album: " ~ album_title %}
+      {% endif %}
+      {% if release_title != 'N/A' %}
+        {% set final_message = final_message ~ " Release: " ~ release_title %}
+      {% endif %}
+      {{ final_message }}
+
+# Readarr Last Event Sensor
+- trigger:
+  - platform: event
+    event_type: readarr_webhook_received
+  sensor:
+  - name: "Readarr Last Event"
+    unique_id: readarr_last_event_sensor
+    state: "{{ trigger.event.data.json_payload.eventType | default('Unknown Event') }}"
+    attributes:
+      event_type: "{{ trigger.event.data.json_payload.eventType | default('Unknown') }}"
+      book_title: "{{ trigger.event.data.json_payload.book.title | default('Unknown Book') if trigger.event.data.json_payload.book is defined else 'Unknown Book' }}"
+      author_name: "{{ trigger.event.data.json_payload.author.authorName | default('N/A') if trigger.event.data.json_payload.author is defined else 'N/A' }}"
+      release_title: "{{ trigger.event.data.json_payload.release.releaseTitle | default('N/A') if trigger.event.data.json_payload.release is defined else 'N/A' }}"
+      release_quality: "{{ trigger.event.data.json_payload.release.quality | default('N/A') if trigger.event.data.json_payload.release is defined else 'N/A' }}"
+      download_client: "{{ trigger.event.data.json_payload.downloadClient | default('N/A') }}"
+      message: "{{ trigger.event.data.json_payload.message | default('N/A') if 'message' in trigger.event.data.json_payload else 'N/A' }}"
+      reason: "{{ trigger.event.data.json_payload.reason | default('N/A') if 'reason' in trigger.event.data.json_payload else 'N/A' }}"
+      full_payload: "{{ trigger.event.data.json_payload | tojson if trigger.event.data.json_payload is defined else '{}' }}"
+
+  # Readarr Notification Log Sensor
+  - name: "Readarr Notification Log"
+    unique_id: readarr_notification_log
+    state: >
+      {% set payload = trigger.event.json_payload %}
+      {% set event_type = payload.eventType | default('Unknown Event') %}
+      {% set book_title = payload.book.title | default('Unknown Book') if payload.book is defined and payload.book is not none else 'Unknown Book' %}
+      {% set author_name = payload.author.authorName | default('N/A') if payload.author is defined and payload.author is not none else 'N/A' %}
+      {% set release_title = payload.release.releaseTitle | default('N/A') if payload.release is defined and payload.release is not none else 'N/A' %}
+
+      {% set final_message = "📚 Readarr: " ~ event_type %}
+      {% if book_title != 'Unknown Book' %}
+        {% set final_message = final_message ~ " Book: " ~ book_title %}
+      {% endif %}
+      {% if author_name != 'N/A' %}
+        {% set final_message = final_message ~ " Author: " ~ author_name %}
+      {% endif %}
+      {% if release_title != 'N/A' %}
+        {% set final_message = final_message ~ " Release: " ~ release_title %}
+      {% endif %}
+      {{ final_message }}
+
+# Master Webhook Log Sensor
+- trigger:
+  - platform: state
+    entity_id:
+      - sensor.sonarr_notification_log
+      - sensor.radarr_notification_log
+      - sensor.prowlarr_notification_log
+      - sensor.tautulli_notification_log
+      - sensor.overseerr_notification_log
+      - sensor.lidarr_notification_log
+      - sensor.readarr_notification_log
+      - sensor.huntarr_notification_log
+      - sensor.jellyfin_notification_log
+  sensor:
+  - name: "Combined Webhook Notifications"
+    unique_id: combined_webhook_notifications_log
+    state: "{{ now().timestamp() }}"
+    attributes:
+      log_entries: >
+        {% set current_log = state_attr('sensor.combined_webhook_notifications', 'log_entries') | default([]) %}
+
+        {% set new_entry_time = now().strftime('%Y-%m-%d %H:%M:%S') %}
+        {% set triggering_entity_id = trigger.entity_id %}
+        {% set source = triggering_entity_id.split('.')[1] | replace('_notification_log', '') | title %}
+        {% set message = trigger.to_state.state %}
+
+        {% set new_log_entry = {'time': new_entry_time, 'source': source, 'message': message} %}
+        {{ ([new_log_entry] + current_log)[:20] }}
+
+# Sonoff Power Consumption
+- sensor:
+  - name: "Sonoff Power Consumption"
+    unit_of_measurement: "W"
+    state: "{{ (states('sensor.sonoff_1000ae8cc9_current') | float(0) * states('sensor.sonoff_1000ae8cc9_voltage') | float(0)) | round(2) }}"
+    availability: "{{ states('sensor.sonoff_1000ae8cc9_current') not in ['unavailable', 'unknown', 'none'] and states('sensor.sonoff_1000ae8cc9_voltage') not in ['unavailable', 'unknown', 'none'] }}"

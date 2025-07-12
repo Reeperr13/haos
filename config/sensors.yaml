@@ -1,0 +1,53 @@
+# configuration.yaml (or sensors.yaml if included)
+
+template:
+  - trigger:
+      - platform: state
+        entity_id: automation.sonarr_webhook # This is your Sonarr automation entity_id
+    sensor:
+      - name: "Sonarr Last Event"
+        unique_id: sonarr_last_event_sensor
+        state: "{{ now().isoformat() }}" # State updates on trigger
+        attributes:
+          event_type: >
+            {% set trigger_json = state_attr('automation.sonarr_webhook', 'last_triggered_data').json %}
+            {{ trigger_json.eventType | default('N/A') }}
+          series_title: >
+            {% set trigger_json = state_attr('automation.sonarr_webhook', 'last_triggered_data').json %}
+            {{ trigger_json.series.title | default('N/A') if trigger_json.series is defined else 'N/A' }}
+          episode_title: >
+            {% set trigger_json = state_attr('automation.sonarr_webhook', 'last_triggered_data').json %}
+            {{ (trigger_json.episodes[0].title | default('N/A') if trigger_json.episodes | length > 0 else 'N/A') if trigger_json.episodes is defined else 'N/A' }}
+          season_episode: >
+            {% set trigger_json = state_attr('automation.sonarr_webhook', 'last_triggered_data').json %}
+            {% set season_num = (trigger_json.episodes[0].seasonNumber | default(0) if trigger_json.episodes | length > 0 else 0) if trigger_json.episodes is defined else 0 %}
+            {% set episode_num = (trigger_json.episodes[0].episodeNumber | default(0) if trigger_json.episodes | length > 0 else 0) if trigger_json.episodes is defined else 0 %}
+            {% if season_num != 0 and episode_num != 0 %}S{{ '%02d' | format(season_num) }}E{{ '%02d' | format(episode_num) }}{% else %}N/A{% endif %}
+          release_title: >
+            {% set trigger_json = state_attr('automation.sonarr_webhook', 'last_triggered_data').json %}
+            {{ trigger_json.release.releaseTitle | default('N/A') if trigger_json.release is defined else 'N/A' }}
+          details_message: >
+            {% set trigger_json = state_attr('automation.sonarr_webhook', 'last_triggered_data').json %}
+            {{ trigger_json.message | default('N/A') if trigger_json.message is defined else 'N/A' }}
+
+
+  - trigger:
+      - platform: state
+        entity_id: automation.notification_radarr # This is your Radarr automation entity_id (note the alias you set)
+    sensor:
+      - name: "Radarr Last Event"
+        unique_id: radarr_last_event_sensor
+        state: "{{ now().isoformat() }}" # State updates on trigger
+        attributes:
+          event_type: >
+            {% set trigger_json = state_attr('automation.notification_radarr', 'last_triggered_data').json %}
+            {{ trigger_json.eventType | default('N/A') }}
+          movie_title: >
+            {% set trigger_json = state_attr('automation.notification_radarr', 'last_triggered_data').json %}
+            {{ trigger_json.movie.title | default('N/A') if trigger_json.movie is defined else 'N/A' }}
+          movie_year: >
+            {% set trigger_json = state_attr('automation.notification_radarr', 'last_triggered_data').json %}
+            {{ trigger_json.movie.year | default('N/A') if trigger_json.movie is defined else 'N/A' }}
+          release_title: >
+            {% set trigger_json = state_attr('automation.notification_radarr', 'last_triggered_data').json %}
+            {{ trigger_json.release.releaseTitle | default('N/A') if trigger_json.release is defined else 'N/A' }}

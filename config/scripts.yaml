@@ -1,0 +1,545 @@
+logik_tv_on:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Power
+  alias: Logik Tv On
+  description: ''
+logik_tv_volume_up:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Volume_UP
+  alias: Logik Tv Volume_UP
+  description: ''
+logik_tv_volume_down:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Volume_Down
+  alias: Logik Tv Volume_Down
+  description: ''
+logik_tv_source:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Source
+  alias: Logik Tv Source
+  description: ''
+logik_tv_picture_mode:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Picture_Mode
+  alias: Logik Tv Picture_Mode
+  description: ''
+logik_tv_sound_mode:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Sound_Mode
+  alias: Logik Tv Sound_Mode
+  description: ''
+logik_tv_display:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Display
+  alias: Logik Tv Display
+  description: ''
+logik_tv_button_up:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Button_Up
+  alias: Logik Tv Button_Up
+  description: ''
+logik_tv_button_down:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Button_Down
+  alias: Logik Tv Button_Down
+  description: ''
+logik_tv_button_left:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Button_Left
+  alias: Logik Tv Button_Left
+  description: ''
+logik_tv_button_right:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Button_Right
+  alias: Logik Tv Button_Right
+  description: ''
+logik_tv_button_menu:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Button_Menu
+  alias: Logik Tv Button_Menu
+  description: ''
+logik_tv_button_exit:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Button_Exit
+  alias: Logik Tv Button_Exit
+  description: ''
+logik_tv_channel_up:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Chanel_Up
+  alias: Logik Tv Channel_Up
+  description: ''
+logik_tv_channel_down:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: Logik_TV
+      command: Chanel_Down
+  alias: Logik Tv Channel_Down
+  description: ''
+media_pc_gaz_ttv:
+  sequence:
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.media_pc_gaz_ttv
+  alias: Media-PC gaz_ttv
+  description: ''
+media_pc_leamxp:
+  sequence:
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.media_pc_leamxp
+  alias: Media-PC leamxp
+  description: ''
+media_pc_warframe:
+  sequence:
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.media_pc_warframe
+  alias: Media-PC warframe
+  description: ''
+'1748539590269':
+  sequence:
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.media_pc_youtube
+  alias: Media-PC youtube
+  description: ''
+media_pc_wake:
+  sequence:
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.media_pc_monitorwake
+  alias: media pc wake
+  description: ''
+keep_bathroom_light_on:
+  alias: Keep Bathroom Light On
+  sequence:
+  - service: light.turn_on
+    data: {}
+    target:
+      device_id: afe7b360097e72c3cb83b3b04a69054d
+tv_hisense_power:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: Power
+  alias: TV Hisense Power
+  description: ''
+tv_hisense_home:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: HOME
+  alias: TV Hisense HOME
+  description: ''
+tv_hisense_input:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: Input
+  alias: TV Hisense Input
+  description: ''
+tv_hisense_disney:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: Disney+
+  alias: TV Hisense Disney+
+  description: ''
+tv_hisense_youtube:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      delay_secs: 0.4
+      hold_secs: 0.4
+      device: 'TV_Hisense '
+      command: Youtube
+  alias: TV Hisense Youtube
+  description: ''
+tv_hisense_primevideo:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: PrimeVideo
+  alias: TV Hisense PrimeVideo
+  description: ''
+tv_hisense_viu:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: VIU
+  alias: TV Hisense VIU
+  description: ''
+tv_hisense_dstv:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: DSTV
+  alias: TV Hisense DSTV
+  description: ''
+tv_hisense_apple_tv:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: APPLE TV
+  alias: TV Hisense APPLE TV
+  description: ''
+tv_hisense_netflix:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: Netflix
+  alias: TV Hisense Netflix
+  description: ''
+tv_hisense_showmax:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: Showmax
+  alias: TV Hisense Showmax
+  description: ''
+tv_hisense_vidaatv:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: VidaaTV
+  alias: TV Hisense VidaaTV
+  description: ''
+tv_hisense_settings:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: Settings
+  alias: TV Hisense Settings
+  description: ''
+tv_hisense_back:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: Back
+  alias: TV Hisense Back
+  description: ''
+tv_hisense_exit:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: Exit
+  alias: TV Hisense Exit
+  description: ''
+tv_hisense_playpause:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: PlayPause
+  alias: TV Hisense PlayPause
+  description: ''
+tv_hisense_up:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: UP
+  alias: TV Hisense UP
+  description: ''
+tv_hisense_right:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: RIGHT
+  alias: TV Hisense RIGHT
+  description: ''
+tv_hisense_down:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: DOWN
+  alias: TV Hisense DOWN
+  description: ''
+tv_hisense_left:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: LEFT
+  alias: TV Hisense LEFT
+  description: ''
+tv_hisense_volume_up:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: VOLUME_UP
+  alias: TV Hisense VOLUME_UP
+  description: ''
+tv_hisense_volume_down:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: VOLUME_DOWN
+  alias: TV Hisense VOLUME_DOWN
+  description: ''
+tv_hisense_mute:
+  sequence:
+  - action: remote.send_command
+    target:
+      device_id: 6fba8f77dd9161c63f9bfa8292f746d1
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 1
+      device: 'TV_Hisense '
+      command: MUTE
+  alias: TV Hisense MUTE
+  description: ''

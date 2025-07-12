@@ -1,0 +1,36 @@
+items:
+- icon: mdi:map
+  id: map
+  mode: storage
+  require_admin: false
+  show_in_sidebar: true
+  title: Map
+  url_path: map
+- icon: mdi:tablet-dashboard
+  id: dashboard_tablet
+  mode: storage
+  require_admin: false
+  show_in_sidebar: true
+  title: Tablet
+  url_path: dashboard-tablet
+- icon: mdi:home
+  id: dashboard_home
+  mode: storage
+  require_admin: false
+  show_in_sidebar: true
+  title: Home
+  url_path: dashboard-home
+- icon: mdi:cellphone
+  id: petri_phone
+  mode: storage
+  require_admin: false
+  show_in_sidebar: true
+  title: Petri Phone
+  url_path: petri-phone
+- icon: mdi:laptop
+  id: petri_laptop
+  mode: storage
+  require_admin: false
+  show_in_sidebar: true
+  title: Petri Laptop
+  url_path: petri-laptop

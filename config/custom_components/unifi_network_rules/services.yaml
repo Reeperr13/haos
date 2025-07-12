@@ -1,0 +1,243 @@
+refresh:
+  name: Refresh
+  description: Refresh UniFi Network data
+
+refresh_data:
+  name: Refresh Data
+  description: Alternative refresh command to update UniFi Network data
+  fields:
+    entry_id:
+      name: Entry ID
+      description: Optional specific configuration entry ID to refresh
+      required: false
+      example: "1234567890abcdef"
+      selector:
+        text:
+
+toggle_rule:
+  name: Toggle Rule
+  description: Enable or disable a specific rule
+  fields:
+    rule_id:
+      name: Rule ID
+      description: ID of the rule to toggle
+      required: true
+      example: "123456789"
+      selector:
+        text:
+    enabled:
+      name: Enabled
+      description: Whether the rule should be enabled (true) or disabled (false)
+      required: true
+      selector:
+        boolean:
+    rule_type:
+      name: Rule Type
+      description: >-
+        Type of rule (optional, will try to auto-detect if not provided).
+        Note: Both "legacy_firewall" and "legacy_traffic" are older versions of "policy".
+      required: false
+      example: "policy"
+      selector:
+        select:
+          options:
+            - "policy"
+            - "route"
+            - "port_forward"
+            - "legacy_firewall"
+            - "legacy_traffic"
+            - "qos_rule"
+
+backup_rules:
+  name: Backup rules
+  description: Backup rules to a file
+  fields:
+    config_entry_id:
+      name: Config Entry ID
+      description: Optional specific configuration entry ID to use (will use first available if not specified)
+      required: false
+      example: "1234567890abcdef"
+      selector:
+        text:
+    filename:
+      name: Filename
+      description: Name of the backup file
+      required: true
+      example: "unifi_rules_backup.json"
+      selector:
+        text:
+
+restore_rules:
+  name: Restore rules
+  description: Restore rules from a backup file
+  fields:
+    config_entry_id:
+      name: Config Entry ID
+      description: Optional specific configuration entry ID to use (will use first available if not specified)
+      required: false
+      example: "1234567890abcdef"
+      selector:
+        text:
+    filename:
+      name: Filename
+      description: Name of the backup file to restore from
+      required: true
+      example: "unifi_rules_backup.json"
+      selector:
+        text:
+    force_restore:
+      name: Force Restore
+      description: If true, restore all rules even if they already exist (default is false - only restore missing rules)
+      required: false
+      default: false
+      example: false
+      selector:
+        boolean:
+    rule_ids:
+      name: Rule IDs
+      description: List of specific rule IDs to restore (optional)
+      required: false
+      example: '["123456789", "987654321"]'
+      selector:
+        object:
+    name_filter:
+      name: Name filter
+      description: Only restore rules whose names contain this text (optional)
+      required: false
+      example: "guest"
+      selector:
+        text:
+    rule_types:
+      name: Rule types
+      description: >-
+        Only restore specific types of rules (optional). Options:
+        "policy" (firewall policies, legacy firewall rules, traffic rules),
+        "route" (traffic routes only),
+        "port_forward" (port forwarding rules),
+        "qos_rule" (QoS quality of service rules),
+        "vpn_client" (VPN client configurations)
+      required: false
+      example: '["policy", "route", "qos_rule"]'
+      selector:
+        select:
+          options:
+            - "policy"
+            - "route"
+            - "port_forward"
+            - "qos_rule"
+            - "vpn_client"
+          multiple: true
+
+bulk_update_rules:
+  name: Bulk update rules
+  description: Enable or disable multiple rules based on name matching
+  fields:
+    name_filter:
+      name: Name filter
+      description: Update rules whose names contain this text
+      required: true
+      example: "guest"
+      selector:
+        text:
+    state:
+      name: State
+      description: The desired state for the rules (true for enabled, false for disabled)
+      required: true
+      selector:
+        boolean:
+
+delete_rule:
+  name: Delete Rule
+  description: Delete a specific rule by ID
+  fields:
+    rule_id:
+      name: Rule ID
+      description: ID of the rule to delete
+      required: true
+      example: "123456789"
+      selector:
+        text:
+    rule_type:
+      name: Rule Type
+      description: >-
+        Type of rule (optional, will try to auto-detect if not provided).
+        Note: Both "legacy_firewall" and "legacy_traffic" are older versions of "policy".
+      required: false
+      example: "policy"
+      selector:
+        select:
+          options:
+            - "policy"
+            - "route"
+            - "port_forward"
+            - "legacy_firewall"
+            - "legacy_traffic"
+            - "qos_rule"
+
+apply_template:
+  name: Apply template
+  description: Apply a rule template
+  fields:
+    template_id:
+      name: Template ID
+      description: ID of the template to apply
+      required: true
+      example: "guest_network"
+      selector:
+        text:
+    variables:
+      name: Variables
+      description: Variables to use when applying the template
+      required: false
+      example: '{"network_id": "123456789"}'
+      selector:
+        object:
+
+save_template:
+  name: Save template
+  description: Save a rule template
+  fields:
+    template_id:
+      name: Template ID
+      description: ID for the template
+      required: true
+      example: "guest_network"
+      selector:
+        text:
+    rule_type:
+      name: Rule type
+      description: Type of rule this template creates
+      required: true
+      selector:
+        select:
+          options:
+            - "firewall_policy"
+            - "traffic_route"
+            - "port_forward"
+    template:
+      name: Template
+      description: The template definition
+      required: true
+      example: '{"name": "Guest Network {network_id}", "enabled": true}'
+      selector:
+        object:
+
+force_cleanup:
+  name: Force Cleanup
+  description: Force cleanup of stale entities that might be left in the entity registry
+
+force_remove_stale:
+  name: Force Remove Stale
+  description: Forcibly remove unavailable entities from the Home Assistant entity registry
+  fields:
+    remove_all:
+      name: Remove All
+      description: If true, removes all entities from this integration, not just unavailable ones
+      required: false
+      default: false
+      selector:
+        boolean:
+
+websocket_diagnostics:
+  name: WebSocket Diagnostics
+  description: Run diagnostics on the WebSocket connection and attempt to repair if needed

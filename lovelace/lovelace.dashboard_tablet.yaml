@@ -1,0 +1,629 @@
+config:
+  views:
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/4aa8506160f0311fe9dd60e174bacde4/original
+      opacity: 70
+      repeat: repeat
+      size: cover
+    badges:
+    - entity: sensor.media_pc_currentvolume
+      name: Media_PC Volume
+      show_entity_picture: false
+      show_icon: true
+      show_name: true
+      show_state: true
+      type: entity
+    - color: blue
+      entity: sensor.qbittorrent_status
+      show_entity_picture: true
+      show_icon: true
+      show_name: true
+      show_state: true
+      state_content:
+      - state
+      - last_changed
+      type: entity
+    cards: []
+    max_columns: 3
+    sections:
+    - cards:
+      - clock_size: medium
+        grid_options:
+          columns: 12
+          rows: 1
+        show_seconds: true
+        time_format: '24'
+        time_zone: Africa/Johannesburg
+        type: clock
+      - card:
+          card_mod:
+            style: "ha-card {\n  background: {% if states('binary_sensor.sonoff_10020b7d53')\
+              \ == 'on' %} #ba0d24 {% endif %}\n}\n"
+          entity: binary_sensor.sonoff_10020b7d53
+          font_size: 60px
+          icon_height: 80px
+          name: Door
+          show_icon: true
+          show_name: true
+          show_state: true
+          type: button
+        conditions:
+        - condition: state
+          entity: binary_sensor.sonoff_10020b7d53
+          state: 'on'
+        type: conditional
+      - card:
+          cameras:
+          - camera_entity: camera.g4_dome_high_resolution_channel
+          type: custom:advanced-camera-card
+        conditions:
+        - condition: state
+          entity: binary_sensor.g4_dome_person_detected
+          state: 'on'
+        type: conditional
+      - entity: weather.forecast_home
+        forecast_type: daily
+        show_current: true
+        show_forecast: true
+        type: weather-forecast
+      - compact_days_to_show: 7
+        compact_events_to_show: 7
+        date_vertical_alignment: top
+        day_separator_width: 1px
+        days_to_show: 7
+        entities:
+        - accent_color: '#eba905'
+          color: '#eba905'
+          compact_events_to_show: 2
+          entity: calendar.radarr
+          show_location: true
+          show_time: true
+          split_multiday_events: true
+        - accent_color: '#20eb05'
+          color: '#20eb05'
+          entity: calendar.holidays_in_south_africa
+          show_time: true
+        - accent_color: '#05d0eb'
+          color: '#05d0eb'
+          entity: calendar.warframe_community_calendar
+        - accent_color: '#eb0505'
+          color: '#eb0505'
+          entity: calendar.load_shedding_forecast
+          label: "\U0001F4C5Load Shedding"
+          show_time: true
+        - accent_color: '#ebd705'
+          color: '#ebd705'
+          entity: calendar.petriest_gmail_com
+          show_location: true
+          show_time: true
+          split_multiday_events: true
+        - accent_color: '#5553e0'
+          color: '#5553e0'
+          compact_events_to_show: 3
+          entity: calendar.ical_sonarr
+          show_location: false
+          show_time: false
+          split_multiday_events: true
+        - entity: calendar.radarr
+        event_background_opacity: -60
+        filter_duplicates: true
+        first_day_of_week: monday
+        month_separator_width: 1px
+        show_countdown: true
+        show_past_events: true
+        show_progress_bar: true
+        split_multiday_events: true
+        time_24h: true
+        title: Calender
+        title_font_size: 26px
+        today_indicator: glow
+        type: custom:calendar-card-pro
+        weather:
+          date:
+            color: var(--primary-text-color)
+            font_size: 12px
+            icon_size: 14px
+            show_conditions: true
+            show_high_temp: true
+            show_low_temp: true
+          entity: weather.forecast_home
+          event:
+            color: var(--primary-text-color)
+            font_size: 12px
+            icon_size: 14px
+            show_conditions: true
+            show_temp: true
+          position: both
+        week_separator_width: 1px
+      type: grid
+    - cards:
+      - card:
+          card_mod:
+            style: "ha-card {\n  background: {% if states('sensor.load_shedding_area_eskde_7_hartenbosmosselbaywesterncape')\
+              \ == 'on' %} #ba0d24 {% endif %}\n}\n"
+          entity: sensor.load_shedding_area_eskde_7_hartenbosmosselbaywesterncape
+          font_size: 60px
+          icon_height: 50px
+          name: Load Shedding
+          show_icon: true
+          show_name: true
+          show_state: true
+          type: button
+        conditions:
+        - condition: state
+          entity: sensor.load_shedding_area_eskde_7_hartenbosmosselbaywesterncape
+          state: 'on'
+        type: conditional
+      - entity: sensor.temperature_humidity_sensor_dafe_temperature
+        grid_options:
+          columns: 6
+          rows: auto
+        max: 40
+        min: 1
+        name: Room Temp
+        needle: true
+        severity:
+          green: 18
+          red: 27
+          yellow: 10
+        type: gauge
+      - entity: sensor.temperature_humidity_sensor_dafe_humidity
+        grid_options:
+          columns: 6
+          rows: auto
+        max: 100
+        min: 1
+        name: 'Room Humidity '
+        needle: true
+        severity:
+          green: 80
+          red: 90
+          yellow: 50
+        type: gauge
+      - cards:
+        - entity: light.sonoff_10023914d9
+          hold_action:
+            action: more-info
+          theme: Mushroom
+          type: light
+        - entity: light.sonoff_1001e7777d
+          hold_action:
+            action: more-info
+          type: light
+        - entity: light.sonoff_1002311f38
+          hold_action:
+            action: more-info
+          type: light
+        type: horizontal-stack
+      - cards:
+        - entity: script.tv_hisense_volume_down
+          icon: mdi:volume-minus
+          name: Volume Down
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: toggle
+          type: button
+        - entity: script.tv_hisense_mute
+          icon: mdi:volume-mute
+          name: Mute
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: toggle
+          type: button
+        - entity: script.tv_hisense_volume_up
+          icon: mdi:volume-plus
+          name: Volume UP
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: toggle
+          type: button
+        type: horizontal-stack
+      - cards:
+        - entity: script.tv_hisense_left
+          icon: mdi:skip-previous
+          name: Previous
+          show_icon: true
+          show_name: true
+          show_state: false
+          tap_action:
+            action: toggle
+          type: button
+        - entity: script.tv_hisense_playpause
+          icon: mdi:play-pause
+          name: Play/Pause
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: toggle
+          type: button
+        - entity: script.tv_hisense_right
+          icon: mdi:skip-next
+          name: Next
+          show_icon: true
+          show_name: true
+          show_state: false
+          tap_action:
+            action: toggle
+          type: button
+        type: horizontal-stack
+      - entity: script.tv_hisense_power
+        grid_options:
+          columns: 3
+          rows: 2
+        icon: mdi:power-standby
+        icon_height: 50px
+        show_icon: true
+        show_name: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: button
+      - entity: button.media_pc_monitorwake
+        grid_options:
+          columns: 3
+          rows: 2
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: perform-action
+          perform_action: script.media_pc_wake
+          target: {}
+        type: button
+      type: grid
+    - cards:
+      - cards:
+        - entity: script.tv_hisense_youtube
+          icon: mdi:youtube
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: toggle
+          type: button
+        - entity: script.tv_hisense_primevideo
+          icon: mdi:amazon-prime
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: toggle
+          type: button
+        - entity: script.tv_hisense_dstv
+          icon: mdi:satellite-dish
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: toggle
+          type: button
+        - entity: script.tv_hisense_showmax
+          icon: mdi:movie-play
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: toggle
+          type: button
+        type: horizontal-stack
+      - cards:
+        - double_tap_action:
+            action: none
+          entity: sensor.gaz_ttv
+          fill_container: false
+          hold_action:
+            action: none
+          icon_type: entity-picture
+          layout: vertical
+          primary_info: name
+          secondary_info: state
+          tap_action:
+            action: perform-action
+            perform_action: script.media_pc_gaz_ttv
+            target: {}
+          type: custom:mushroom-entity-card
+        - double_tap_action:
+            action: none
+          entity: sensor.leamxp
+          fill_container: false
+          hold_action:
+            action: none
+          icon_type: entity-picture
+          layout: vertical
+          secondary_info: state
+          tap_action:
+            action: perform-action
+            perform_action: script.media_pc_leamxp
+            target: {}
+          type: custom:mushroom-entity-card
+        - double_tap_action:
+            action: none
+          entity: sensor.warframe
+          fill_container: false
+          hold_action:
+            action: none
+          icon_type: entity-picture
+          layout: vertical
+          secondary_info: state
+          tap_action:
+            action: perform-action
+            perform_action: script.media_pc_warframe
+            target: {}
+          type: custom:mushroom-entity-card
+        type: horizontal-stack
+      - content: "**Status**: {{ states('sensor.qbittorrent_all_torrents_summary')\
+          \ }}\n**Download Speed**: {{ states('sensor.qbittorrent_download_speed')\
+          \ | float(0) | round(2) }} MiB/s\n---------------------------------------------------------\n\
+          {% set all_torrents_processed = state_attr('sensor.qbittorrent_all_torrents_summary',\
+          \ 'torrents_details') %}\n{% if all_torrents_processed is none or all_torrents_processed\
+          \ | length == 0 %}\n  **No torrents currently available or loading.**\n\
+          {% else %}\n  {% for torrent in all_torrents_processed %}\n    Torrent:\
+          \ {{ torrent.name | default('N/A') }}\n    Added: {{ torrent.added_date\
+          \ | default('N/A') }}\n    Status: {{ torrent.status | default('unknown')\
+          \ }}\n    Progress: {{ (torrent.percent_done | float(0) / 100) | round(2)\
+          \ }}%\n    Ratio: {{ (torrent.ratio | float(0) * 100) | int / 100 }}\n \
+          \   ETA: {{ torrent.eta | default('N/A') }}\n    ---------------------------------------------------------\n\
+          \  {% endfor %}\n{% endif %}"
+        type: markdown
+      - content: "{% set log_entries = state_attr('sensor.combined_webhook_notifications',\
+          \ 'log_entries') %}\n{% if log_entries is not none and log_entries | length\
+          \ > 0 %}\n  {% for entry in log_entries %}\n    **{{ entry.time }} ({{ entry.source\
+          \ }}):** {{ entry.message }}<br>\n  {% endfor %}\n{% else %}\n  No webhook\
+          \ events logged yet.\n{% endif %}\n"
+        title: Servarr Logs
+        type: markdown
+      type: grid
+    title: Home
+    type: sections
+  - background:
+      alignment: center
+      attachment: fixed
+      image: /api/image/serve/c1f3586bcbdffe08c310d8934f1b8fb1/original
+      opacity: 33
+      repeat: repeat
+      size: cover
+    cards: []
+    max_columns: 5
+    path: media
+    sections:
+    - cards:
+      - entities:
+        - entity: sensor.qbittorrent_all_torrents
+        - entity: sensor.qbittorrent_download_speed
+        - entity: sensor.qbittorrent_upload_speed
+        - entity: switch.qbittorrent_alternative_speed
+        show_icon: true
+        show_name: true
+        show_state: true
+        state_color: true
+        title: My qBittorrent Downloads
+        type: glance
+      - content: "**Status**: {{ states('sensor.qbittorrent_all_torrents_summary')\
+          \ }}\n**Download Speed**: {{ states('sensor.qbittorrent_download_speed')\
+          \ | float(0) | round(2) }} MiB/s\n---------------------------------------------------------\n\
+          {% set all_torrents_processed = state_attr('sensor.qbittorrent_all_torrents_summary',\
+          \ 'torrents_details') %}\n{% if all_torrents_processed is none or all_torrents_processed\
+          \ | length == 0 %}\n  **No torrents currently available or loading.**\n\
+          {% else %}\n  {% for torrent in all_torrents_processed %}\n    Torrent:\
+          \ {{ torrent.name | default('N/A') }}\n    Added: {{ torrent.added_date\
+          \ | default('N/A') }}\n    Status: {{ torrent.status | default('unknown')\
+          \ }}\n    Progress: {{ (torrent.percent_done | float(0) / 100) | round(2)\
+          \ }}%\n    Ratio: {{ (torrent.ratio | float(0) * 100) | int / 100 }}\n \
+          \   ETA: {{ torrent.eta | default('N/A') }}\n    ---------------------------------------------------------\n\
+          \  {% endfor %}\n{% endif %}"
+        type: markdown
+      type: grid
+    - cards:
+      - collapse: flag=false
+        enable_tooltips: true
+        entity: sensor.sonarr_sonarr_upcoming_media
+        image_style: fanart
+        sort_by: number
+        title: Upcoming TV Series
+        type: custom:upcoming-media-card
+      type: grid
+    - cards:
+      - collapse: flag=false
+        enable_tooltips: true
+        entity: sensor.radarr_upcoming_media_radarr_upcoming_media
+        image_style: fanart
+        sort_by: number
+        title: Upcoming Movies
+        type: custom:upcoming-media-card
+      - heading: New section
+        type: heading
+      type: grid
+    title: Media
+    type: sections
+  - max_columns: 4
+    path: weather
+    sections:
+    - cards:
+      - heading: New section
+        type: heading
+      - entity: weather.home
+        type: custom:clock-weather-card
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      type: grid
+    - cards: []
+      type: grid
+    title: Weather
+    type: sections
+  - max_columns: 4
+    path: tv
+    sections:
+    - cards:
+      - heading: New section
+        type: heading
+      - custom_actions:
+        - autofill_entity_id: true
+          entity_id: script.logik_tv_on
+          haptics: false
+          icon: mdi:power
+          label: Power
+          name: power
+          tap_action:
+            action: perform-action
+            perform_action: script.logik_tv_on
+            target: {}
+          type: button
+        - entity_id: script.logik_tv_button_menu
+          icon: mdi:menu
+          label: Menu
+          name: menu
+          tap_action:
+            action: key
+            key: MENU
+          type: button
+        - autofill_entity_id: false
+          entity_id: script.logik_tv_button_exit
+          haptics: false
+          icon: mdi:exit-to-app
+          label: Exit
+          name: back
+          tap_action:
+            action: key
+            key: MENU
+          type: button
+        - entity_id: script.logik_tv_button_down
+          hold_action:
+            action: repeat
+          icon: mdi:arrow-down-bold
+          label: Down
+          name: down
+          tap_action:
+            action: key
+            key: DPAD_DOWN
+          type: button
+        - entity_id: script.logik_tv_button_left
+          hold_action:
+            action: repeat
+          icon: mdi:arrow-left-bold
+          label: Left
+          name: left
+          tap_action:
+            action: key
+            key: DPAD_LEFT
+          type: button
+        - entity_id: script.logik_tv_button_right
+          icon: mdi:arrow-right-bold
+          label: Rigth
+          name: Right
+          type: button
+        - entity_id: script.logik_tv_button_up
+          icon: mdi:arrow-up-bold
+          label: UP
+          name: UP
+          type: button
+        - entity_id: script.logik_tv_channel_down
+          icon: mdi:arrow-down-circle
+          label: Channel -
+          name: channel_down
+          tap_action:
+            action: key
+            key: CHANNEL_DOWN
+          type: button
+        - entity_id: script.logik_tv_channel_up
+          icon: mdi:arrow-up-circle
+          label: Channel +
+          name: channel_up
+          tap_action:
+            action: key
+            key: CHANNEL_UP
+          type: button
+        - entity_id: script.logik_tv_display
+          icon: mdi:television-box
+          label: Display
+          name: Display
+          type: button
+        - entity_id: script.logik_tv_picture_mode
+          icon: mdi:panorama-variant-outline
+          label: Picture
+          name: Picture
+          type: button
+        - entity_id: script.logik_tv_sound_mode
+          icon: mdi:surround-sound
+          label: Sound Mode
+          name: sound
+          type: button
+        - entity_id: script.logik_tv_source
+          icon: mdi:import
+          label: Source
+          name: source
+          tap_action:
+            action: key
+            key: TV_INPUT
+          type: button
+        - entity_id: script.logik_tv_volume_down
+          hold_action:
+            action: repeat
+          icon: mdi:volume-minus
+          label: Volume -
+          name: volume_down
+          tap_action:
+            action: key
+            key: VOLUME_UP
+          type: button
+        - entity_id: script.logik_tv_volume_up
+          hold_action:
+            action: repeat
+          icon: mdi:volume-high
+          label: Volume +
+          name: volume_up
+          tap_action:
+            action: key
+            key: VOLUME_UP
+          type: button
+        custom_icons: []
+        device: Logik_TV
+        grid_options:
+          columns: 7
+          rows: auto
+        media_player_id: media_player.g4_dome_speaker
+        platform: Generic Remote
+        remote_id: remote.broadlink_universal_remote
+        rows:
+        - - menu
+          - power
+          - back
+        - - Display
+          - Picture
+          - source
+          - sound
+        - - left
+          - UP
+          - Right
+        - down
+        - - channel_down
+          - channel_up
+          - volume_up
+          - volume_down
+        type: custom:universal-remote-card
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      - action: {}
+        entity_id: media_player.vlc_telnet
+        search:
+          enabled: true
+          entity_id: media_player.vlc_telnet
+        speaker_group:
+          entity_id: media_player.g4_dome_speaker
+        type: custom:mediocre-media-player-card
+        use_art_colors: true
+      - entity_id: media_player.vlc_telnet
+        mode: card
+        type: custom:mediocre-massive-media-player-card
+        use_art_colors: true
+      type: grid
+    - cards:
+      - heading: New section
+        type: heading
+      type: grid
+    title: TV
+    type: sections

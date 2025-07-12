@@ -1,0 +1,167 @@
+blueprint:
+  name: Agent 1
+  description: "Your personal, helpful Agent 1 ✨\n\nI’m here to support you with your
+    daily routines and make sure you’re perfectly prepared to start your day! \U0001F4AA\U0001F31E\n\n\U0001F326️
+    **Weather:** I’ll keep you updated on the current weather so you can dress appropriately.\n\n\U0001F4C5
+    **Calendar:** I’ll inform you about your upcoming appointments and important events
+    so you don’t miss anything.\n\n\U0001F389 **Special Occasions:** From birthdays
+    to anniversaries – I’ll remind you of moments worth celebrating!\n\nWith helpful
+    tips and motivational messages, I’ll ensure you start your day positively and
+    productively. \U0001F680\U0001F4BC"
+  domain: automation
+  input:
+    notify_time:
+      name: Notification Time
+      description: The time at which the notification will be triggered.
+      selector:
+        time: {}
+      default: 06:15:00
+    notify_service:
+      name: Notification Service Name
+      description: "\U0001F4F1 The name of the notification service to which the notification
+        should be sent."
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: notify.notify
+    notify_target:
+      name: Notification Target
+      description: "\U0001F3AF The target of the notification service."
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: ''
+    calendar_entity:
+      name: Calendar
+      description: "\U0001F4C5 The calendar entities to use for upcoming events."
+      selector:
+        entity:
+          multiple: true
+          filter:
+          - domain:
+            - calendar
+    calendar_duration:
+      name: Calendar Event Timing
+      description: ⏰ How many hours in advance to look for upcoming events.
+      selector:
+        duration: {}
+      default:
+        hours: 18
+    weather_entity:
+      name: Weather Entity
+      description: "\U0001F326️ The weather entity to use for the weather forecast."
+      selector:
+        entity:
+          multiple: false
+          filter:
+          - domain:
+            - weather
+    zone_entity:
+      name: Location Zone
+      description: "\U0001F304 The zone entity to use to determine the approximate
+        location for weather information."
+      selector:
+        entity:
+          multiple: false
+          filter:
+          - domain:
+            - zone
+    conversation_agent:
+      name: Conversation Agent
+      description: "\U0001F916 The AI model to use for configuring your personalized
+        message."
+      selector:
+        conversation_agent: {}
+    prompt:
+      name: Conversation Agent Prompt
+      description: ✍️ The description to provide to the AI for generating your personalized
+        text.
+      selector:
+        text:
+          multiline: true
+          type: text
+          multiple: false
+      default: 'Please generate a friendly and helpful notification for the user''s
+        smartphone.
+
+
+        - Your responses should always be helpful, warm, and informative.
+
+        - Avoid technical details or specific system information.
+
+        - Compose messages to motivate the user.
+
+        - Include notes on exceptional weather suitable for the season, with recommendations
+        on what to wear today (e.g., long pants, shorts, (light) jacket, sweater).
+
+        - Mention upcoming meetings or appointments only if they exist. List events
+        chronologically, showing the date and time.
+
+        - Do not inform about the absence of appointments.
+
+        - Highlight special occasions such as birthdays or anniversaries.
+
+        - Add emojis to make the message more engaging.
+
+        - Ensure correct grammar and meaningful sentence structure.
+
+        - Use paragraphs.'
+  source_url: https://gist.github.com/SchBenedikt/59963b62cdfae3eddf746e3148270dd8
+trigger:
+  platform: time
+  at: !input notify_time
+action:
+- variables:
+    weather_entity: !input weather_entity
+    calendar_entity: !input calendar_entity
+    zone_entity: !input zone_entity
+    calendar_duration: !input calendar_duration
+    prompt: !input prompt
+    events_responses: []
+- alias: Fetch Weather Forecast
+  service: weather.get_forecasts
+  data:
+    type: hourly
+  target:
+    entity_id: '{{ weather_entity }}'
+  response_variable: daily_forecast
+- variables:
+    forecast_entity: '{{ daily_forecast[weather_entity] }}'
+    forecast: '{{ forecast_entity.forecast[0] }}'
+- alias: Retrieve Calendar Events for Each Calendar
+  action: calendar.get_events
+  data:
+    duration: !input calendar_duration
+  target:
+    entity_id: !input calendar_entity
+  response_variable: calendar_response
+- alias: Create Notification Text
+  service: conversation.process
+  data:
+    text: 'Time: {{ now().strftime("%A %d. %B %H:%M") }}
+
+      {%- if weather_entity is defined %}
+
+      {%- set temperature_unit = state_attr(weather_entity, ''temperature_unit'')
+      -%}
+
+      Weather Forecast: {{ forecast.condition }} ({{ forecast.temperature }}{{ temperature_unit
+      }}, {{ forecast.precipitation }}% precipitation)
+
+      {%- endif %}
+
+
+      {{calendar_response}}
+
+
+      {{ prompt }}'
+    agent_id: !input conversation_agent
+  response_variable: agent
+- alias: Send Notification
+  service: !input notify_service
+  data:
+    target: !input notify_target
+    title: Daily Agenda
+    message: '{{ agent.response.speech.plain.speech }}'
